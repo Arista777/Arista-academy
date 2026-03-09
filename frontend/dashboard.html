@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Dashboard Academia</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    body { font-family: Arial; padding: 20px; background: #f4f6f9; }
+    h1 { margin-bottom: 20px; }
+    .cards { display: flex; gap: 20px; margin-bottom: 30px; }
+    .card {
+      flex: 1;
+      padding: 20px;
+      border-radius: 10px;
+      background: white;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    }
+    .card h2 { margin: 0; font-size: 28px; }
+    .positive { color: green; }
+    .negative { color: red; }
+    .controls { margin-bottom: 20px; }
+    canvas { background: white; padding: 20px; border-radius: 10px; }
+  </style>
+</head>
+<body>
+
+<h1>📊 Dashboard Academia</h1>
+
+<div class="controls">
+  <label>Mes: </label>
+  <input type="month" id="monthPicker">
+  <button onclick="loadDashboard()">Cargar</button>
+  <button onclick="closeMonth()">Cerrar Mes</button>
+</div>
+
+<div class="cards">
+  <div class="card">
+    <p>Estudiantes Activos</p>
+    <h2 id="activeStudents">0</h2>
+  </div>
+  <div class="card">
+    <p>Ingresos</p>
+    <h2 id="totalIncome">₡0</h2>
+  </div>
+  <div class="card">
+    <p>Gastos</p>
+    <h2 id="totalExpenses">₡0</h2>
+  </div>
+  <div class="card">
+    <p>Ganancia Neta</p>
+    <h2 id="netProfit">₡0</h2>
+  </div>
+</div>
+
+<canvas id="financeChart"></canvas>
+
+<script>
+const API_URL = "http://192.168.64.2:3000";
+
+let chart;
+
+async function loadDashboard() {
+  const month = document.getElementById("monthPicker").value;
+  if(!month) return alert("Selecciona un mes");
+
+  const res = await fetch(`${API_URL}/dashboard/${month}`);
+  const data = await res.json();
+
+  document.getElementById("activeStudents").textContent = data.active_students;
+  document.getElementById("totalIncome").textContent = `₡${data.total_income}`;
+  document.getElementById("totalExpenses").textContent = `₡${data.total_expenses}`;
+
+  const profitEl = document.getElementById("netProfit");
+  profitEl.textContent = `₡${data.net_profit}`;
+  profitEl.className = data.net_profit >= 0 ? "positive" : "negative";
+
+  renderChart(data);
+}
+
+function renderChart(data) {
+  const ctx = document.getElementById('financeChart');
+
+  if(chart) chart.destroy();
+
+  chart = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: ['Ingresos', 'Gastos', 'Ganancia'],
+      datasets: [{
+        label: 'Resumen Financiero',
+        data: [
+          data.total_income,
+          data.total_expenses,
+          data.net_profit
+        ]
+      }]
+    }
+  });
+}
+
+async function closeMonth() {
+  const month = document.getElementById("monthPicker").value;
+  if(!month) return alert("Selecciona un mes");
+
+  const res = await fetch(`${API_URL}/close-month/${month}`, {
+    method: "POST"
+  });
+
+  const data = await res.json();
+  alert(data.message);
+}
+</script>
+
+</body>
+</html>
