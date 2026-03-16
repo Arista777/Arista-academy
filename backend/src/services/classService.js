@@ -1,7 +1,76 @@
 import { createClass, getClassById, listClasses, updateClass } from "../models/classModel.js";
 
+const dayLabels = ["Dom", "Lun", "Mar", "Mie", "Jue", "Vie", "Sab"];
+
+function formatTime(timeValue) {
+  if (!timeValue) return "";
+  const [hours, minutes] = String(timeValue).split(":");
+  const hourNumber = Number(hours);
+  const suffix = hourNumber >= 12 ? "PM" : "AM";
+  const hour12 = ((hourNumber + 11) % 12) + 1;
+  return `${hour12}:${minutes} ${suffix}`;
+}
+
+function formatSchedule(dayOfWeek, startsAt) {
+  return `${dayLabels[dayOfWeek]} · ${formatTime(startsAt)}`;
+}
+
+function nextSessionDate(dayOfWeek, startsAt) {
+  const now = new Date();
+  const target = new Date(now);
+  const currentDow = now.getDay();
+  const diff = (dayOfWeek - currentDow + 7) % 7;
+  target.setDate(now.getDate() + diff);
+
+  if (diff === 0) {
+    const [h, m] = String(startsAt).split(":");
+    const session = new Date(now);
+    session.setHours(Number(h), Number(m || 0), 0, 0);
+    if (session < now) {
+      target.setDate(target.getDate() + 7);
+    }
+  }
+
+  const [hour, minute] = String(startsAt).split(":");
+  target.setHours(Number(hour), Number(minute || 0), 0, 0);
+  return target;
+}
+
 async function getClasses() {
   return listClasses();
+}
+
+async function getClassesSummary() {
+  const classes = await listClasses();
+
+  const formattedClasses = classes.map((item) => ({
+    id: item.id,
+    name: item.name,
+    coach: item.coach_name || "Sin coach",
+    capacity: item.capacity || "-",
+    schedule: formatSchedule(item.day_of_week, item.starts_at),
+  }));
+
+  const sessions = classes
+    .map((item) => ({
+      id: item.id,
+      className: item.name,
+      when: nextSessionDate(item.day_of_week, item.starts_at),
+    }))
+    .sort((a, b) => a.when - b.when)
+    .slice(0, 3)
+    .map((item) => {
+      const now = new Date();
+      const diffDays = Math.round((item.when - now) / (1000 * 60 * 60 * 24));
+      const label = diffDays === 0 ? "Hoy" : diffDays === 1 ? "Manana" : dayLabels[item.when.getDay()];
+      return {
+        time: `${label} ${formatTime(item.when.toTimeString().slice(0, 5))}`,
+        className: item.className,
+        roster: "-",
+      };
+    });
+
+  return { classes: formattedClasses, sessions };
 }
 
 async function addClass(payload) {
@@ -74,4 +143,4 @@ async function getClass(id) {
   return record;
 }
 
-export { getClasses, addClass, patchClass, getClass };
+export { getClasses, getClassesSummary, addClass, patchClass, getClass };

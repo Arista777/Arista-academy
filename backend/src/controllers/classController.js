@@ -1,5 +1,11 @@
-import { addClass, getClass, getClasses, patchClass } from "../services/classService.js";
-import { getClassAttendanceHistory } from "../services/attendanceService.js";
+import {
+  addClass,
+  getClass,
+  getClasses,
+  getClassesSummary,
+  patchClass,
+} from "../services/classService.js";
+import { getAttendanceStats } from "../services/attendanceService.js";
 
 async function listClasses(req, res) {
   try {
@@ -11,29 +17,23 @@ async function listClasses(req, res) {
   }
 }
 
-async function createClass(req, res) {
+async function classSummary(req, res) {
   try {
-    const record = await addClass(req.body || {});
-    res.status(201).json(record);
+    const summary = await getClassesSummary();
+    res.json(summary);
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: "Failed to create class" });
+    res.status(500).json({ error: "Failed to fetch class summary" });
   }
 }
 
-async function updateClass(req, res) {
-  const { id } = req.params;
-
+async function createClass(req, res) {
   try {
-    const record = await patchClass(id, req.body || {});
-    res.json(record);
+    const created = await addClass(req.body || {});
+    res.status(201).json(created);
   } catch (error) {
-    if (error.status) {
-      return res.status(error.status).json({ error: error.message });
-    }
-
     console.error(error);
-    res.status(500).json({ error: "Failed to update class" });
+    res.status(500).json({ error: "Failed to create class" });
   }
 }
 
@@ -53,16 +53,39 @@ async function getClassController(req, res) {
   }
 }
 
+async function updateClass(req, res) {
+  const { id } = req.params;
+
+  try {
+    const updated = await patchClass(id, req.body || {});
+    res.json(updated);
+  } catch (error) {
+    if (error.status) {
+      return res.status(error.status).json({ error: error.message });
+    }
+
+    console.error(error);
+    res.status(500).json({ error: "Failed to update class" });
+  }
+}
+
 async function classAttendance(req, res) {
   const { id } = req.params;
 
   try {
-    const history = await getClassAttendanceHistory(id);
-    res.json(history);
+    const summary = await getAttendanceStats({ classId: id });
+    res.json(summary);
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: "Failed to fetch class attendance" });
   }
 }
 
-export { listClasses, createClass, updateClass, getClassController, classAttendance };
+export {
+  listClasses,
+  classSummary,
+  createClass,
+  getClassController,
+  updateClass,
+  classAttendance,
+};
