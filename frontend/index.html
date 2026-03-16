@@ -208,26 +208,33 @@
 </head>
 <body>
 
-<section id="authPanel" class="panel">
-  <h2>Acceso</h2>
-  <p class="muted">Inicia sesion o crea un usuario para entrar al sistema.</p>
+  <section id="authPanel" class="panel">
+    <h2>Acceso</h2>
+    <p class="muted">Inicia sesion o crea un usuario para entrar al sistema.</p>
 
-  <div class="auth-layout">
-    <form id="loginForm">
-      <h3>Iniciar sesion</h3>
-      <input type="text" id="loginUsername" placeholder="Usuario" required>
-      <input type="password" id="loginPassword" placeholder="Contrasena" required>
-      <button class="secondary-btn" type="submit">Entrar</button>
-    </form>
+    <div class="auth-layout">
+      <form id="apiConfigForm">
+        <h3>API base</h3>
+        <input type="text" id="apiBaseInput" placeholder="http://localhost:3000">
+        <button class="secondary-btn" type="submit">Guardar API</button>
+        <p class="muted">Deja vacio para demo local.</p>
+      </form>
 
-    <form id="registerForm">
-      <h3>Crear usuario</h3>
-      <input type="text" id="registerUsername" placeholder="Usuario" required>
-      <input type="password" id="registerPassword" placeholder="Contrasena (min 6)" required>
-      <button class="add-btn" type="submit">Registrarse</button>
-    </form>
-  </div>
-</section>
+      <form id="loginForm">
+        <h3>Iniciar sesion</h3>
+        <input type="text" id="loginUsername" placeholder="Usuario" required>
+        <input type="password" id="loginPassword" placeholder="Contrasena" required>
+        <button class="secondary-btn" type="submit">Entrar</button>
+      </form>
+
+      <form id="registerForm">
+        <h3>Crear usuario</h3>
+        <input type="text" id="registerUsername" placeholder="Usuario" required>
+        <input type="password" id="registerPassword" placeholder="Contrasena (min 6)" required>
+        <button class="add-btn" type="submit">Registrarse</button>
+      </form>
+    </div>
+  </section>
 
 <div id="appShell">
   <div class="header-row panel">
@@ -370,7 +377,8 @@
 </div>
 
 <script>
-const API_BASE = `${window.location.protocol}//${window.location.hostname}:3000`;
+const DEFAULT_API_BASE = `${window.location.protocol}//${window.location.hostname}:3000`;
+const API_BASE = localStorage.getItem("arista_api_base") || DEFAULT_API_BASE;
 const STUDENTS_API_URL = `${API_BASE}/students`;
 const TOKEN_KEY = "arista_auth_token";
 const USERNAME_KEY = "arista_auth_username";
@@ -459,6 +467,60 @@ function formatCRC(value) {
   return `CRC ${Number(value || 0)}`;
 }
 
+function demoStudents() {
+  return [
+    { id: 1, name: "Ana", belt: "Blue", age: 24, monthly_fee: 35000, payment_date: "2026-03-01", status: "al_dia" },
+    { id: 2, name: "Luis", belt: "White", age: 19, monthly_fee: 30000, payment_date: "2026-03-05", status: "pendiente" },
+    { id: 3, name: "Carla", belt: "Purple", age: 30, monthly_fee: 45000, payment_date: "2026-03-02", status: "atrasado" },
+  ];
+}
+
+function demoDashboard() {
+  return {
+    active_students: 3,
+    total_income: 110000,
+    total_expenses: 20000,
+    net_profit: 90000,
+  };
+}
+
+function demoExpenses() {
+  return [
+    { description: "Alquiler", amount: 15000 },
+    { description: "Limpieza", amount: 5000 },
+  ];
+}
+
+function demoTechniques() {
+  return [
+    { id: 1, name: "Triangle choke", category: "Guard" },
+    { id: 2, name: "Armbar", category: "Guard" },
+    { id: 3, name: "Omoplata", category: "Guard" },
+  ];
+}
+
+function demoTechniqueLinks() {
+  return [
+    { related_name: "Armbar", relation_type: "related" },
+    { related_name: "Omoplata", relation_type: "related" },
+  ];
+}
+
+function demoTechniqueResources() {
+  return [
+    { resource_type: "video", title: "Triangle choke basics" },
+    { resource_type: "drill", title: "Triangle entries drill" },
+  ];
+}
+
+async function apiFetchWithFallback(path, options = {}) {
+  try {
+    return await apiFetch(path, options);
+  } catch (error) {
+    return { ok: false, status: 0, json: async () => ({}) };
+  }
+}
+
 const ageSelectForm = document.getElementById("age");
 for (let i = 4; i <= 80; i++) {
   const option = document.createElement("option");
@@ -471,9 +533,8 @@ async function loadStudents() {
   tableBody.innerHTML = "";
   let total = 0;
 
-  const res = await apiFetch("/students");
-  if (!res.ok) throw new Error("Error cargando estudiantes");
-  const students = await res.json();
+  const res = await apiFetchWithFallback("/students");
+  const students = res.ok ? await res.json() : demoStudents();
 
   students.forEach((s, index) => {
     total += Number(s.monthly_fee || 0);
@@ -525,13 +586,8 @@ async function loadStudents() {
 async function loadExpenses(month) {
   expenseList.innerHTML = "Cargando gastos...";
 
-  const res = await apiFetch(`/expenses/${month}`);
-  if (!res.ok) {
-    expenseList.innerHTML = "Error cargando gastos";
-    return;
-  }
-
-  const expenses = await res.json();
+  const res = await apiFetchWithFallback(`/expenses/${month}`);
+  const expenses = res.ok ? await res.json() : demoExpenses();
 
   if (!expenses.length) {
     expenseList.innerHTML = "No hay gastos para este mes.";
@@ -584,13 +640,8 @@ function renderTechniqueForms(techniques) {
 
 async function loadTechniques() {
   techListEl.innerHTML = "Cargando tecnicas...";
-  const res = await apiFetch("/api/v1/techniques");
-  if (!res.ok) {
-    techListEl.innerHTML = "Error cargando tecnicas";
-    return;
-  }
-
-  const techniques = await res.json();
+  const res = await apiFetchWithFallback("/api/v1/techniques");
+  const techniques = res.ok ? await res.json() : demoTechniques();
   if (!techniques.length) {
     techListEl.innerHTML = "No hay tecnicas.";
     techDetailTitle.textContent = "Selecciona una tecnica";
@@ -683,14 +734,14 @@ async function selectTechnique(id, techniques) {
   techDetailTitle.dataset.id = id;
   techDetailMeta.textContent = selected ? selected.category : "";
 
-  const linksRes = await apiFetch(`/api/v1/techniques/${id}/links`);
-  const links = linksRes.ok ? await linksRes.json() : [];
+  const linksRes = await apiFetchWithFallback(`/api/v1/techniques/${id}/links`);
+  const links = linksRes.ok ? await linksRes.json() : demoTechniqueLinks();
   techLinksEl.innerHTML = links.length
     ? links.map((l) => `<div>${l.related_name} (${l.relation_type})</div>`).join("")
     : "<span class=\"muted\">Sin relaciones</span>";
 
-  const resRes = await apiFetch(`/api/v1/techniques/${id}/resources`);
-  const resources = resRes.ok ? await resRes.json() : [];
+  const resRes = await apiFetchWithFallback(`/api/v1/techniques/${id}/resources`);
+  const resources = resRes.ok ? await resRes.json() : demoTechniqueResources();
   techResourcesEl.innerHTML = resources.length
     ? resources.map((r) => `<div>${r.resource_type}: ${r.title || "Recurso"}</div>`).join("")
     : "<span class=\"muted\">Sin recursos</span>";
@@ -726,9 +777,8 @@ async function loadDashboard() {
   const month = monthPicker.value;
   if (!month) return;
 
-  const res = await apiFetch(`/dashboard/${month}`);
-  if (!res.ok) throw new Error("No se pudo cargar dashboard");
-  const data = await res.json();
+  const res = await apiFetchWithFallback(`/dashboard/${month}`);
+  const data = res.ok ? await res.json() : demoDashboard();
 
   document.getElementById("activeStudents").textContent = data.active_students;
   document.getElementById("totalIncome").textContent = formatCRC(data.total_income);
@@ -808,6 +858,18 @@ document.getElementById("registerForm").addEventListener("submit", async (e) => 
 document.getElementById("logoutBtn").addEventListener("click", () => {
   clearSession();
   showAuth();
+});
+
+document.getElementById("apiConfigForm").addEventListener("submit", (e) => {
+  e.preventDefault();
+  const input = document.getElementById("apiBaseInput");
+  const value = input.value.trim();
+  if (value) {
+    localStorage.setItem("arista_api_base", value);
+  } else {
+    localStorage.removeItem("arista_api_base");
+  }
+  location.reload();
 });
 
 document.getElementById("studentForm").addEventListener("submit", async (e) => {
