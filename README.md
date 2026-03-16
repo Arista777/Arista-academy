@@ -50,6 +50,15 @@ Services:
 - `worker` background jobs
 - `frontend` static dashboard on port 8080
 
+## Deploy on Render
+This repo includes a `render.yaml` blueprint to deploy the API, worker, frontend, and Postgres.
+
+1. Create a new Render Blueprint and select the repository.
+2. Render will detect `render.yaml` and provision services.
+3. Set `YOUTUBE_API_KEY` in the API service environment.
+4. Rotate `JWT_SECRET` if needed.
+
+The backend supports `DATABASE_URL` for managed Postgres environments.
 ## Environment Variables
 See `.env.example` for configuration values.
 
