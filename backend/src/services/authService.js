@@ -6,7 +6,7 @@ import {
 } from "../models/userModel.js";
 import { createToken } from "../utils/tokens.js";
 
-async function register({ username, password }) {
+async function register({ username, password, role }) {
   const existing = await findUserByUsernameForRegistration(username);
   if (existing) {
     const error = new Error("Username already exists");
@@ -15,10 +15,10 @@ async function register({ username, password }) {
   }
 
   const passwordHash = await bcrypt.hash(password, 10);
-  const user = await createUser(username, passwordHash);
+  const user = await createUser(username, passwordHash, role);
   const token = createToken(user);
 
-  return { token, user: { id: user.id, username: user.username } };
+  return { token, user: { id: user.id, username: user.username, role: user.role } };
 }
 
 async function login({ username, password }) {
@@ -39,7 +39,7 @@ async function login({ username, password }) {
 
   const token = createToken(user);
 
-  return { token, user: { id: user.id, username: user.username } };
+  return { token, user: { id: user.id, username: user.username, role: user.role } };
 }
 
 export { register, login };

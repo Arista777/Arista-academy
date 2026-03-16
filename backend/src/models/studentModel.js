@@ -13,6 +13,14 @@ async function getStudentById(id) {
   return result.rows[0] || null;
 }
 
+async function getStudentByUserId(userId) {
+  const result = await pool.query(
+    "SELECT * FROM students WHERE user_id = $1",
+    [userId]
+  );
+  return result.rows[0] || null;
+}
+
 async function createStudent({
   name,
   belt,
@@ -20,12 +28,13 @@ async function createStudent({
   monthly_fee,
   payment_date,
   status,
+  user_id,
 }) {
   const result = await pool.query(
-    `INSERT INTO students (name, belt, age, monthly_fee, payment_date, status)
-     VALUES ($1, $2, $3, $4, $5, $6)
+    `INSERT INTO students (name, belt, age, monthly_fee, payment_date, status, user_id)
+     VALUES ($1, $2, $3, $4, $5, $6, $7)
      RETURNING *`,
-    [name, belt, age, monthly_fee, payment_date, status]
+    [name, belt, age, monthly_fee, payment_date, status, user_id || null]
   );
 
   return result.rows[0];
@@ -48,4 +57,4 @@ async function updateStudent(id, fields, values) {
   return result;
 }
 
-export { listStudents, getStudentById, createStudent, deleteStudent, updateStudent };
+export { listStudents, getStudentById, getStudentByUserId, createStudent, deleteStudent, updateStudent };

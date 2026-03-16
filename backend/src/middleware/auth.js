@@ -15,6 +15,7 @@ function authRequired(req, res, next) {
     req.user = {
       id: payload.sub,
       username: payload.username,
+      role: payload.role,
     };
     next();
   } catch (error) {

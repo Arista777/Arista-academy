@@ -2,6 +2,7 @@ import {
   createStudent,
   deleteStudent,
   getStudentById,
+  getStudentByUserId,
   listStudents,
   updateStudent,
 } from "../models/studentModel.js";
@@ -18,6 +19,7 @@ async function addStudent({
   monthly_fee,
   payment_date,
   status,
+  user_id,
 }) {
   return createStudent({
     name,
@@ -26,6 +28,7 @@ async function addStudent({
     monthly_fee: toNumber(monthly_fee),
     payment_date: payment_date || null,
     status: status || "pendiente",
+    user_id,
   });
 }
 
@@ -59,8 +62,19 @@ async function getStudentProfile(id) {
   return { student };
 }
 
+async function getStudentProfileByUserId(userId) {
+  const student = await getStudentByUserId(userId);
+  if (!student) {
+    const error = new Error("Student not found");
+    error.status = 404;
+    throw error;
+  }
+
+  return { student };
+}
+
 async function patchStudent(id, payload) {
-  const { name, monthly_fee, age, belt, status, payment_date } = payload;
+  const { name, monthly_fee, age, belt, status, payment_date, user_id } = payload;
   const fields = [];
   const values = [];
 
@@ -94,6 +108,11 @@ async function patchStudent(id, payload) {
     values.push(payment_date || null);
   }
 
+  if (user_id !== undefined) {
+    fields.push(`user_id = $${fields.length + 1}`);
+    values.push(user_id || null);
+  }
+
   if (fields.length === 0) {
     const error = new Error("No fields to update");
     error.status = 400;
@@ -118,4 +137,5 @@ export {
   patchStudent,
   deactivateStudent,
   getStudentProfile,
+  getStudentProfileByUserId,
 };

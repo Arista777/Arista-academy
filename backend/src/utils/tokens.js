@@ -6,6 +6,7 @@ function createToken(user) {
     {
       sub: user.id,
       username: user.username,
+      role: user.role,
     },
     JWT_SECRET,
     { expiresIn: JWT_EXPIRES_IN }

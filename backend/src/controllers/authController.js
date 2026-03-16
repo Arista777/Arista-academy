@@ -1,8 +1,10 @@
 import { login, register } from "../services/authService.js";
+import { ALL_ROLES, ROLE_ADMIN } from "../middleware/roles.js";
 
 async function registerUser(req, res) {
   const username = String(req.body?.username || "").trim().toLowerCase();
   const password = String(req.body?.password || "");
+  const roleInput = String(req.body?.role || "").trim().toLowerCase();
 
   if (!username || !password) {
     return res.status(400).json({ error: "Username and password are required" });
@@ -13,7 +15,8 @@ async function registerUser(req, res) {
   }
 
   try {
-    const result = await register({ username, password });
+    const role = ALL_ROLES.includes(roleInput) ? roleInput : ROLE_ADMIN;
+    const result = await register({ username, password, role });
     res.status(201).json(result);
   } catch (error) {
     if (error.status) {

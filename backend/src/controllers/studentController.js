@@ -2,6 +2,7 @@ import {
   addStudent,
   deactivateStudent,
   getStudentProfile,
+  getStudentProfileByUserId,
   getStudents,
   patchStudent,
   removeStudent,
@@ -101,6 +102,20 @@ async function getStudentProfileController(req, res) {
   }
 }
 
+async function getMyStudentProfile(req, res) {
+  try {
+    const profile = await getStudentProfileByUserId(req.user.id);
+    res.json(profile);
+  } catch (error) {
+    if (error.status) {
+      return res.status(error.status).json({ error: error.message });
+    }
+
+    console.error(error);
+    res.status(500).json({ error: "Failed to fetch student profile" });
+  }
+}
+
 export {
   listStudents,
   createStudent,
@@ -108,4 +123,5 @@ export {
   updateStudent,
   deactivateStudentController,
   getStudentProfileController,
+  getMyStudentProfile,
 };
