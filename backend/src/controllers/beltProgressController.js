@@ -1,4 +1,4 @@
-import { getBeltProgress, recordBeltProgress } from "../services/beltProgressService.js";
+import { getBeltProgress, getBeltProgressByUserId, recordBeltProgress } from "../services/beltProgressService.js";
 
 async function createBeltProgress(req, res) {
   try {
@@ -22,4 +22,18 @@ async function listBeltProgress(req, res) {
   }
 }
 
-export { createBeltProgress, listBeltProgress };
+async function listMyBeltProgress(req, res) {
+  try {
+    const progress = await getBeltProgressByUserId(req.user.id);
+    res.json(progress);
+  } catch (error) {
+    if (error.status) {
+      return res.status(error.status).json({ error: error.message });
+    }
+
+    console.error(error);
+    res.status(500).json({ error: "Failed to fetch belt progress" });
+  }
+}
+
+export { createBeltProgress, listBeltProgress, listMyBeltProgress };

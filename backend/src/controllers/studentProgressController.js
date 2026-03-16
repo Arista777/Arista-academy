@@ -1,4 +1,4 @@
-import { getStudentProgress, saveStudentProgress } from "../services/studentProgressService.js";
+import { getStudentProgress, getStudentProgressByUserId, saveStudentProgress } from "../services/studentProgressService.js";
 
 async function upsertStudentProgress(req, res) {
   try {
@@ -22,4 +22,18 @@ async function listStudentProgress(req, res) {
   }
 }
 
-export { upsertStudentProgress, listStudentProgress };
+async function listMyStudentProgress(req, res) {
+  try {
+    const progress = await getStudentProgressByUserId(req.user.id);
+    res.json(progress);
+  } catch (error) {
+    if (error.status) {
+      return res.status(error.status).json({ error: error.message });
+    }
+
+    console.error(error);
+    res.status(500).json({ error: "Failed to fetch student progress" });
+  }
+}
+
+export { upsertStudentProgress, listStudentProgress, listMyStudentProgress };
