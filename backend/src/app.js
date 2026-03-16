@@ -12,6 +12,7 @@ import membershipRoutes from "./routes/membershipRoutes.js";
 import techniqueRoutes from "./routes/techniqueRoutes.js";
 import beltProgressRoutes from "./routes/beltProgressRoutes.js";
 import classHistoryRoutes from "./routes/classHistoryRoutes.js";
+import studentProgressRoutes from "./routes/studentProgressRoutes.js";
 import { healthCheck } from "./controllers/healthController.js";
 
 const app = express();
@@ -32,6 +33,7 @@ app.use("/api/v1/membership-plans", membershipRoutes);
 app.use("/api/v1/techniques", techniqueRoutes);
 app.use("/api/v1/belt-progress", beltProgressRoutes);
 app.use("/api/v1/class-history", classHistoryRoutes);
+app.use("/api/v1/student-progress", studentProgressRoutes);
 app.use("/api/v1", dashboardRoutes);
 
 // Legacy routes for backward compatibility
