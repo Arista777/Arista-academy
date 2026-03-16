@@ -60,10 +60,12 @@ Base URL: `/api/v1`
 ## Martial Arts Progress
 - `POST /belt-progress`
 - `GET /belt-progress/students/:studentId`
+- `GET /belt-progress/me`
 - `POST /class-history`
 - `GET /class-history/classes/:classId`
 - `POST /student-progress`
 - `GET /student-progress/students/:studentId`
+- `GET /student-progress/me`
 
 ## Roles
 - `admin`: full access

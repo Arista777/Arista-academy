@@ -9,6 +9,7 @@ A modular, scalable SaaS CRM for martial arts academies (BJJ, Muay Thai). It sup
 - Class scheduling and instructor assignment
 - Belt progression
 - Technique knowledge base
+- Technique resources with YouTube metadata
 - Background jobs (reminders, inactivity alerts, attendance summaries)
 
 ## Tech Stack
