@@ -22,16 +22,30 @@ services:
       DB_PORT: 5432
       DB_USER: postgres
       DB_PASSWORD: postgres
-      DB_NAME: postgres
+      DB_NAME: academy
     ports:
       - "3000:3000"
+
+  worker:
+    build: ./backend
+    depends_on:
+      - db
+    environment:
+      JWT_SECRET: arista-local-dev-secret
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_USER: postgres
+      DB_PASSWORD: postgres
+      DB_NAME: academy
+      JOB_INTERVAL_MINUTES: 60
+    command: ["node", "worker.js"]
 
   frontend:
     build: ./frontend
     depends_on:
       - api
     ports:
-      - "8080:8080"
+      - "8080:80"
 
 volumes:
   postgres_data:
