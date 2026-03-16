@@ -5,6 +5,14 @@ async function listStudents() {
   return result.rows;
 }
 
+async function getStudentById(id) {
+  const result = await pool.query(
+    "SELECT * FROM students WHERE id = $1",
+    [id]
+  );
+  return result.rows[0] || null;
+}
+
 async function createStudent({
   name,
   belt,
@@ -40,4 +48,4 @@ async function updateStudent(id, fields, values) {
   return result;
 }
 
-export { listStudents, createStudent, deleteStudent, updateStudent };
+export { listStudents, getStudentById, createStudent, deleteStudent, updateStudent };

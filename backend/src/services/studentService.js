@@ -1,6 +1,7 @@
 import {
   createStudent,
   deleteStudent,
+  getStudentById,
   listStudents,
   updateStudent,
 } from "../models/studentModel.js";
@@ -35,6 +36,27 @@ async function removeStudent(id) {
     error.status = 404;
     throw error;
   }
+}
+
+async function deactivateStudent(id) {
+  const result = await updateStudent(id, ["status = $1"], ["inactive"]);
+  if (result.rowCount === 0) {
+    const error = new Error("Student not found");
+    error.status = 404;
+    throw error;
+  }
+  return result.rows[0];
+}
+
+async function getStudentProfile(id) {
+  const student = await getStudentById(id);
+  if (!student) {
+    const error = new Error("Student not found");
+    error.status = 404;
+    throw error;
+  }
+
+  return { student };
 }
 
 async function patchStudent(id, payload) {
@@ -94,4 +116,6 @@ export {
   addStudent,
   removeStudent,
   patchStudent,
+  deactivateStudent,
+  getStudentProfile,
 };

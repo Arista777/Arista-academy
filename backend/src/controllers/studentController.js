@@ -1,5 +1,7 @@
 import {
   addStudent,
+  deactivateStudent,
+  getStudentProfile,
   getStudents,
   patchStudent,
   removeStudent,
@@ -67,9 +69,43 @@ async function updateStudent(req, res) {
   }
 }
 
+async function deactivateStudentController(req, res) {
+  const { id } = req.params;
+
+  try {
+    const student = await deactivateStudent(id);
+    res.json(student);
+  } catch (error) {
+    if (error.status) {
+      return res.status(error.status).json({ error: error.message });
+    }
+
+    console.error(error);
+    res.status(500).json({ error: "Deactivate failed" });
+  }
+}
+
+async function getStudentProfileController(req, res) {
+  const { id } = req.params;
+
+  try {
+    const profile = await getStudentProfile(id);
+    res.json(profile);
+  } catch (error) {
+    if (error.status) {
+      return res.status(error.status).json({ error: error.message });
+    }
+
+    console.error(error);
+    res.status(500).json({ error: "Failed to fetch student profile" });
+  }
+}
+
 export {
   listStudents,
   createStudent,
   deleteStudent,
   updateStudent,
+  deactivateStudentController,
+  getStudentProfileController,
 };
