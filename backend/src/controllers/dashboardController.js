@@ -1,4 +1,9 @@
-import { closeMonth, generateMonthlyStats, getMonthSummary } from "../services/dashboardService.js";
+import {
+  closeMonth,
+  generateMonthlyStats,
+  getMonthSummary,
+} from "../services/dashboardService.js";
+import { getDashboardSummary } from "../services/dashboardSummaryService.js";
 
 async function getDashboard(req, res) {
   const { month } = req.params;
@@ -9,6 +14,16 @@ async function getDashboard(req, res) {
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: "Dashboard error" });
+  }
+}
+
+async function getDashboardSummaryController(req, res) {
+  try {
+    const summary = await getDashboardSummary();
+    res.json(summary);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Dashboard summary error" });
   }
 }
 
@@ -39,4 +54,4 @@ async function generateStats(req, res) {
   }
 }
 
-export { getDashboard, closeMonthController, generateStats };
+export { getDashboard, getDashboardSummaryController, closeMonthController, generateStats };
