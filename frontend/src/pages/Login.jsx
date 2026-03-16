@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { apiLogin, apiRegister } from "../utils/api.js";
+import { apiLogin, apiRegister, getApiBase, setApiBase } from "../utils/api.js";
 import { enableDemoMode, setAuth } from "../utils/auth.js";
 
 export default function Login() {
@@ -11,6 +11,7 @@ export default function Login() {
   const [role, setRole] = useState("admin");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [apiBase, setApiValue] = useState(getApiBase());
 
   const onSubmit = async (event) => {
     event.preventDefault();
@@ -34,6 +35,11 @@ export default function Login() {
   const onDemo = () => {
     enableDemoMode();
     navigate("/");
+  };
+
+  const onSaveApi = (event) => {
+    event.preventDefault();
+    setApiBase(apiBase);
   };
 
   return (
@@ -74,6 +80,20 @@ export default function Login() {
                 Crear admin
               </button>
             </div>
+
+            <form onSubmit={onSaveApi} className="mt-6 space-y-2">
+              <label className="text-xs font-semibold text-steel">API base</label>
+              <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+                <input
+                  value={apiBase}
+                  onChange={(event) => setApiValue(event.target.value)}
+                  className="w-full rounded-xl border border-mist bg-haze px-3 py-2 text-sm"
+                  placeholder="http://localhost:3000"
+                />
+                <button className="rounded-xl bg-ink px-4 py-2 text-xs font-semibold text-white">Guardar</button>
+              </div>
+              <p className="text-xs text-steel">Usa el puerto del backend, por defecto `http://localhost:3000`.</p>
+            </form>
 
             <form onSubmit={onSubmit} className="mt-6 space-y-4">
               <div>

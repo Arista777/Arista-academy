@@ -7,6 +7,15 @@ export function getApiBase() {
   return localStorage.getItem("arista_api_base") || FALLBACK_URL;
 }
 
+export function setApiBase(value) {
+  if (typeof window === "undefined") return;
+  if (value && value.trim()) {
+    localStorage.setItem("arista_api_base", value.trim());
+  } else {
+    localStorage.removeItem("arista_api_base");
+  }
+}
+
 function normalizeBase(base) {
   if (base.endsWith("/api/v1")) return base;
   if (base.endsWith("/")) return `${base}api/v1`;
