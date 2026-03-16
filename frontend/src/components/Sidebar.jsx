@@ -1,16 +1,17 @@
 import React from "react";
+import { NavLink } from "react-router-dom";
 
 const nav = [
-  { id: "dashboard", label: "Dashboard" },
-  { id: "students", label: "Estudiantes" },
-  { id: "payments", label: "Pagos" },
-  { id: "attendance", label: "Asistencias" },
-  { id: "classes", label: "Clases" },
-  { id: "techniques", label: "Tecnicas" },
-  { id: "progress", label: "Progreso" },
+  { id: "dashboard", label: "Dashboard", to: "/" },
+  { id: "students", label: "Estudiantes", to: "/students" },
+  { id: "payments", label: "Pagos", to: "/payments" },
+  { id: "attendance", label: "Asistencias", to: "/attendance" },
+  { id: "classes", label: "Clases", to: "/classes" },
+  { id: "techniques", label: "Tecnicas", to: "/techniques" },
+  { id: "progress", label: "Progreso", to: "/progress" },
 ];
 
-export default function Sidebar({ active, onChange }) {
+export default function Sidebar() {
   return (
     <aside className="card flex h-full flex-col gap-6">
       <div className="flex items-center gap-3">
@@ -28,18 +29,22 @@ export default function Sidebar({ active, onChange }) {
       </div>
       <div className="space-y-2">
         {nav.map((item) => (
-          <button
+          <NavLink
             key={item.id}
-            onClick={() => onChange(item.id)}
-            className={`flex w-full items-center justify-between rounded-xl px-4 py-3 text-left text-sm font-semibold transition ${
-              active === item.id
-                ? "bg-ink text-white shadow"
-                : "text-steel hover:bg-mist"
-            }`}
+            to={item.to}
+            className={({ isActive }) =>
+              `flex w-full items-center justify-between rounded-xl px-4 py-3 text-left text-sm font-semibold transition ${
+                isActive ? "bg-ink text-white shadow" : "text-steel hover:bg-mist"
+              }`
+            }
           >
-            <span>{item.label}</span>
-            <span className={`h-2 w-2 rounded-full ${active === item.id ? "bg-ember" : "bg-transparent"}`}></span>
-          </button>
+            {({ isActive }) => (
+              <>
+                <span>{item.label}</span>
+                <span className={`h-2 w-2 rounded-full ${isActive ? "bg-ember" : "bg-transparent"}`}></span>
+              </>
+            )}
+          </NavLink>
         ))}
       </div>
       <div className="rounded-xl border border-mist px-4 py-4 text-sm text-ink">
