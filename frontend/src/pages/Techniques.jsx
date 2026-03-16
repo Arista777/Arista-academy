@@ -9,7 +9,7 @@ export default function Techniques() {
   const techniques = (data && data.techniques) || data || demoTechniques;
 
   return (
-    <section className="space-y-6">
+    <section className="space-y-6 animate-rise">
       <div className="card">
         <SectionHeader
           kicker="Knowledge"

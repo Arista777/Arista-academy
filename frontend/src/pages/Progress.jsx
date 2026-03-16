@@ -11,7 +11,7 @@ export default function Progress() {
   const students = (data && data.students) || demoProgress;
 
   return (
-    <section className="space-y-6">
+    <section className="space-y-6 animate-rise">
       <div className="grid gap-4 lg:grid-cols-[1.2fr_1fr]">
         <div className="card">
           <SectionHeader title="Distribucion de cinturones" subtitle="Estado actual del programa de BJJ." />

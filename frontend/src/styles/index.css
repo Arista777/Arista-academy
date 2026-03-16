@@ -38,12 +38,35 @@ body::after {
 
 .card {
   @apply rounded-2xl bg-white/80 p-6 shadow-soft backdrop-blur;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
 .card-strong {
   @apply rounded-2xl bg-ink p-6 text-white shadow-soft;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
 .glass {
   @apply rounded-2xl border border-white/40 bg-white/60 backdrop-blur;
+}
+
+.card:hover,
+.card-strong:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 32px 80px rgba(17, 17, 24, 0.16);
+}
+
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-rise {
+  animation: rise 0.5s ease both;
 }

@@ -19,7 +19,7 @@ export default function Students() {
   const students = (data && data.students) || data || demoStudents;
 
   return (
-    <section className="space-y-6">
+    <section className="space-y-6 animate-rise">
       <div className="card">
         <SectionHeader
           kicker="Academia"

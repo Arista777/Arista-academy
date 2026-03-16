@@ -20,7 +20,7 @@ export default function Payments() {
   const plans = (data && data.plans) || demoPlans;
 
   return (
-    <section className="space-y-6">
+    <section className="space-y-6 animate-rise">
       <div className="grid gap-4 lg:grid-cols-[1.4fr_1fr]">
         <div className="card">
           <SectionHeader

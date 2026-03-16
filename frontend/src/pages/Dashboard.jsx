@@ -15,7 +15,7 @@ export default function Dashboard() {
   const payload = getPayload(data);
 
   return (
-    <section className="space-y-6">
+    <section className="space-y-6 animate-rise">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <SectionHeader
           kicker="Resumen"
