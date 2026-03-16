@@ -150,6 +150,43 @@
     font-size: 14px;
   }
 
+  .tech-layout {
+    display: grid;
+    grid-template-columns: 220px 1fr;
+    gap: 16px;
+  }
+
+  .tech-list {
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 10px;
+    background: #f8fafc;
+    max-height: 320px;
+    overflow: auto;
+  }
+
+  .tech-item {
+    padding: 6px 8px;
+    border-radius: 6px;
+    cursor: pointer;
+  }
+
+  .tech-item.active {
+    background: #e2e8f0;
+    font-weight: bold;
+  }
+
+  .tech-detail {
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 10px;
+    background: #ffffff;
+  }
+
+  .tech-section {
+    margin-top: 12px;
+  }
+
   .muted {
     color: #475569;
     font-size: 13px;
@@ -201,6 +238,7 @@
     <div class="top-actions">
       <a class="link-btn secondary-btn" href="#students-panel">Estudiantes</a>
       <a class="link-btn secondary-btn" href="#dashboard-panel">Dashboard</a>
+      <a class="link-btn secondary-btn" href="#techniques-panel">Tecnicas</a>
       <a class="link-btn secondary-btn" href="/dashboard.html">Dashboard separado</a>
       <button id="logoutBtn" class="delete-btn" type="button">Cerrar sesion</button>
     </div>
@@ -302,6 +340,33 @@
       </div>
     </div>
   </section>
+
+  <section id="techniques-panel" class="panel">
+    <h2>Base tecnica</h2>
+    <p class="muted">Relaciona tecnicas, agrega videos, notas y drills.</p>
+
+    <div class="tech-layout">
+      <div>
+        <div id="techList" class="tech-list">Cargando tecnicas...</div>
+        <div id="techForms" class="tech-section"></div>
+      </div>
+
+      <div class="tech-detail">
+        <div id="techDetailTitle" class="metric">Selecciona una tecnica</div>
+        <div id="techDetailMeta" class="muted"></div>
+
+        <div class="tech-section">
+          <strong>Relacionadas</strong>
+          <div id="techLinks" class="muted">-</div>
+        </div>
+
+        <div class="tech-section">
+          <strong>Recursos</strong>
+          <div id="techResources" class="muted">-</div>
+        </div>
+      </div>
+    </div>
+  </section>
 </div>
 
 <script>
@@ -309,6 +374,7 @@ const API_BASE = `${window.location.protocol}//${window.location.hostname}:3000`
 const STUDENTS_API_URL = `${API_BASE}/students`;
 const TOKEN_KEY = "arista_auth_token";
 const USERNAME_KEY = "arista_auth_username";
+const ROLE_KEY = "arista_auth_role";
 
 const authPanel = document.getElementById("authPanel");
 const appShell = document.getElementById("appShell");
@@ -318,21 +384,32 @@ const totalFeeEl = document.getElementById("totalFee");
 const monthPicker = document.getElementById("monthPicker");
 const expenseMonth = document.getElementById("expenseMonth");
 const expenseList = document.getElementById("expenseList");
+const techListEl = document.getElementById("techList");
+const techFormsEl = document.getElementById("techForms");
+const techDetailTitle = document.getElementById("techDetailTitle");
+const techDetailMeta = document.getElementById("techDetailMeta");
+const techLinksEl = document.getElementById("techLinks");
+const techResourcesEl = document.getElementById("techResources");
 
 let financeChart;
+let currentRole = null;
 
 function getToken() {
   return localStorage.getItem(TOKEN_KEY);
 }
 
-function setSession(token, username) {
+function setSession(token, username, role) {
   localStorage.setItem(TOKEN_KEY, token);
   localStorage.setItem(USERNAME_KEY, username);
+  if (role) {
+    localStorage.setItem(ROLE_KEY, role);
+  }
 }
 
 function clearSession() {
   localStorage.removeItem(TOKEN_KEY);
   localStorage.removeItem(USERNAME_KEY);
+  localStorage.removeItem(ROLE_KEY);
 }
 
 function showAuth() {
@@ -340,10 +417,10 @@ function showAuth() {
   appShell.style.display = "none";
 }
 
-function showApp(username) {
+function showApp(username, role) {
   authPanel.style.display = "none";
   appShell.style.display = "block";
-  currentUsernameEl.textContent = username || "-";
+  currentUsernameEl.textContent = role ? `${username} (${role})` : (username || "-");
 }
 
 async function apiFetch(path, options = {}) {
@@ -466,6 +543,159 @@ async function loadExpenses(month) {
   )).join("");
 }
 
+function renderTechniqueForms(techniques) {
+  if (currentRole === "student") {
+    techFormsEl.innerHTML = "<div class=\"muted\">Solo lectura para estudiantes.</div>";
+    return;
+  }
+
+  const options = techniques.map((t) => `<option value="${t.id}">${t.name}</option>`).join("");
+
+  techFormsEl.innerHTML = `
+    <form id="techniqueForm">
+      <h3>Nueva tecnica</h3>
+      <input type="text" id="techName" placeholder="Nombre" required>
+      <input type="text" id="techCategory" placeholder="Categoria" required>
+      <input type="text" id="techDescription" placeholder="Descripcion">
+      <button class="add-btn" type="submit">Agregar tecnica</button>
+    </form>
+
+    <form id="techLinkForm">
+      <h3>Relacionar tecnica</h3>
+      <select id="techRelatedId" required>${options}</select>
+      <input type="text" id="techRelationType" placeholder="Tipo (related)" />
+      <button class="secondary-btn" type="submit">Agregar relacion</button>
+    </form>
+
+    <form id="techResourceForm">
+      <h3>Agregar recurso</h3>
+      <select id="techResourceType" required>
+        <option value="video">Video</option>
+        <option value="note">Nota</option>
+        <option value="drill">Drill</option>
+      </select>
+      <input type="text" id="techResourceTitle" placeholder="Titulo (opcional)">
+      <input type="text" id="techResourceUrl" placeholder="URL (YouTube) opcional">
+      <input type="text" id="techResourceContent" placeholder="Contenido/Notas">
+      <button class="success-btn" type="submit">Agregar recurso</button>
+    </form>
+  `;
+}
+
+async function loadTechniques() {
+  techListEl.innerHTML = "Cargando tecnicas...";
+  const res = await apiFetch("/api/v1/techniques");
+  if (!res.ok) {
+    techListEl.innerHTML = "Error cargando tecnicas";
+    return;
+  }
+
+  const techniques = await res.json();
+  if (!techniques.length) {
+    techListEl.innerHTML = "No hay tecnicas.";
+    techDetailTitle.textContent = "Selecciona una tecnica";
+    techDetailMeta.textContent = "";
+    techLinksEl.textContent = "-";
+    techResourcesEl.textContent = "-";
+    return;
+  }
+
+  techListEl.innerHTML = techniques.map((t) => (
+    `<div class="tech-item" data-id="${t.id}">${t.name}</div>`
+  )).join("");
+
+  renderTechniqueForms(techniques);
+
+  const first = techniques[0];
+  await selectTechnique(first.id, techniques);
+
+  techListEl.querySelectorAll(".tech-item").forEach((item) => {
+    item.addEventListener("click", async () => {
+      const id = item.dataset.id;
+      await selectTechnique(id, techniques);
+      techListEl.querySelectorAll(".tech-item").forEach((el) => el.classList.remove("active"));
+      item.classList.add("active");
+    });
+  });
+
+  const form = document.getElementById("techniqueForm");
+  if (form) {
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      await apiFetch("/api/v1/techniques", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: document.getElementById("techName").value,
+          category: document.getElementById("techCategory").value,
+          description: document.getElementById("techDescription").value,
+        }),
+      });
+      form.reset();
+      await loadTechniques();
+    });
+  }
+
+  const linkForm = document.getElementById("techLinkForm");
+  if (linkForm) {
+    linkForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const selectedId = techDetailTitle.dataset.id;
+      if (!selectedId) return;
+      await apiFetch(`/api/v1/techniques/${selectedId}/links`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          related_technique_id: document.getElementById("techRelatedId").value,
+          relation_type: document.getElementById("techRelationType").value || "related",
+        }),
+      });
+      linkForm.reset();
+      await selectTechnique(selectedId, techniques);
+    });
+  }
+
+  const resourceForm = document.getElementById("techResourceForm");
+  if (resourceForm) {
+    resourceForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const selectedId = techDetailTitle.dataset.id;
+      if (!selectedId) return;
+      await apiFetch(`/api/v1/techniques/${selectedId}/resources`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          resource_type: document.getElementById("techResourceType").value,
+          title: document.getElementById("techResourceTitle").value,
+          url: document.getElementById("techResourceUrl").value,
+          content: document.getElementById("techResourceContent").value,
+        }),
+      });
+      resourceForm.reset();
+      await selectTechnique(selectedId, techniques);
+    });
+  }
+}
+
+async function selectTechnique(id, techniques) {
+  const selected = techniques.find((t) => String(t.id) === String(id));
+  techDetailTitle.textContent = selected ? selected.name : "Tecnica";
+  techDetailTitle.dataset.id = id;
+  techDetailMeta.textContent = selected ? selected.category : "";
+
+  const linksRes = await apiFetch(`/api/v1/techniques/${id}/links`);
+  const links = linksRes.ok ? await linksRes.json() : [];
+  techLinksEl.innerHTML = links.length
+    ? links.map((l) => `<div>${l.related_name} (${l.relation_type})</div>`).join("")
+    : "<span class=\"muted\">Sin relaciones</span>";
+
+  const resRes = await apiFetch(`/api/v1/techniques/${id}/resources`);
+  const resources = resRes.ok ? await resRes.json() : [];
+  techResourcesEl.innerHTML = resources.length
+    ? resources.map((r) => `<div>${r.resource_type}: ${r.title || "Recurso"}</div>`).join("")
+    : "<span class=\"muted\">Sin recursos</span>";
+}
+
 function renderChart(data) {
   const ctx = document.getElementById("financeChart");
 
@@ -524,6 +754,7 @@ async function closeMonth() {
 async function refreshAll() {
   await loadStudents();
   await loadDashboard();
+  await loadTechniques();
 }
 
 document.getElementById("loginForm").addEventListener("submit", async (e) => {
@@ -541,8 +772,9 @@ document.getElementById("loginForm").addEventListener("submit", async (e) => {
     const data = await res.json();
     if (!res.ok) throw new Error(data.error || "No se pudo iniciar sesion");
 
-    setSession(data.token, data.user.username);
-    showApp(data.user.username);
+    setSession(data.token, data.user.username, data.user.role);
+    currentRole = data.user.role;
+    showApp(data.user.username, data.user.role);
     await refreshAll();
   } catch (error) {
     alert(error.message);
@@ -564,8 +796,9 @@ document.getElementById("registerForm").addEventListener("submit", async (e) => 
     const data = await res.json();
     if (!res.ok) throw new Error(data.error || "No se pudo registrar");
 
-    setSession(data.token, data.user.username);
-    showApp(data.user.username);
+    setSession(data.token, data.user.username, data.user.role);
+    currentRole = data.user.role;
+    showApp(data.user.username, data.user.role);
     await refreshAll();
   } catch (error) {
     alert(error.message);
@@ -686,6 +919,7 @@ async function bootstrap() {
 
   const token = getToken();
   const storedUsername = localStorage.getItem(USERNAME_KEY);
+  const storedRole = localStorage.getItem(ROLE_KEY);
 
   if (!token) {
     showAuth();
@@ -696,7 +930,8 @@ async function bootstrap() {
     const res = await apiFetch("/auth/me");
     if (!res.ok) throw new Error("No autorizado");
     const data = await res.json();
-    showApp(data.user.username || storedUsername);
+    currentRole = data.user.role || storedRole;
+    showApp(data.user.username || storedUsername, currentRole);
     await refreshAll();
   } catch (error) {
     clearSession();
