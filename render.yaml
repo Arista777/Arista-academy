@@ -23,8 +23,8 @@ services:
   - name: arista-frontend
     type: web
     runtime: static
-    buildCommand: "echo 'static'"
-    staticPublishPath: frontend
+    buildCommand: "cd frontend && npm install && npm run build"
+    staticPublishPath: frontend/dist
 
 
 databases:
