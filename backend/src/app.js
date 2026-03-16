@@ -7,6 +7,7 @@ import expenseRoutes from "./routes/expenseRoutes.js";
 import dashboardRoutes from "./routes/dashboardRoutes.js";
 import paymentRoutes from "./routes/paymentRoutes.js";
 import attendanceRoutes from "./routes/attendanceRoutes.js";
+import classRoutes from "./routes/classRoutes.js";
 import { healthCheck } from "./controllers/healthController.js";
 
 const app = express();
@@ -22,6 +23,7 @@ app.use("/api/v1/students", studentRoutes);
 app.use("/api/v1/expenses", expenseRoutes);
 app.use("/api/v1/payments", paymentRoutes);
 app.use("/api/v1/attendance", attendanceRoutes);
+app.use("/api/v1/classes", classRoutes);
 app.use("/api/v1", dashboardRoutes);
 
 // Legacy routes for backward compatibility
