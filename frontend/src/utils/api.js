@@ -1,3 +1,5 @@
+import { getToken } from "./auth.js";
+
 const FALLBACK_URL = "http://localhost:3000";
 
 export function getApiBase() {
@@ -5,12 +7,20 @@ export function getApiBase() {
   return localStorage.getItem("arista_api_base") || FALLBACK_URL;
 }
 
+function normalizeBase(base) {
+  if (base.endsWith("/api/v1")) return base;
+  if (base.endsWith("/")) return `${base}api/v1`;
+  return `${base}/api/v1`;
+}
+
 async function request(path, options = {}) {
-  const base = getApiBase();
+  const base = normalizeBase(getApiBase());
   const url = `${base}${path}`;
+  const token = getToken();
   const response = await fetch(url, {
     headers: {
       "Content-Type": "application/json",
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
       ...(options.headers || {}),
     },
     ...options,
@@ -29,6 +39,18 @@ export const api = {
   post: (path, body) => request(path, { method: "POST", body: JSON.stringify(body) }),
 };
 
+export async function apiLogin(body) {
+  return api.post("/auth/login", body);
+}
+
+export async function apiRegister(body) {
+  return api.post("/auth/register", body);
+}
+
+export async function apiMe() {
+  return api.get("/auth/me");
+}
+
 export async function fetchDashboard() {
   return api.get("/dashboard/summary");
 }
@@ -46,7 +68,7 @@ export async function fetchAttendance() {
 }
 
 export async function fetchClasses() {
-  return api.get("/classes");
+  return api.get("/classes/summary");
 }
 
 export async function fetchTechniques() {

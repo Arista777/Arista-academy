@@ -9,6 +9,8 @@ import Attendance from "./pages/Attendance.jsx";
 import Payments from "./pages/Payments.jsx";
 import Techniques from "./pages/Techniques.jsx";
 import Progress from "./pages/Progress.jsx";
+import Login from "./pages/Login.jsx";
+import { getToken, isDemoMode } from "./utils/auth.js";
 
 const labels = {
   "/": "Panel general",
@@ -20,9 +22,21 @@ const labels = {
   "/progress": "Progreso",
 };
 
+function RequireAuth({ children }) {
+  const token = getToken();
+  const demo = isDemoMode();
+  if (token || demo) return children;
+  return <Navigate to="/login" replace />;
+}
+
 export default function App() {
   const location = useLocation();
   const activeLabel = labels[location.pathname] || "Panel general";
+  const isLogin = location.pathname === "/login";
+
+  if (isLogin) {
+    return <Login />;
+  }
 
   return (
     <div className="min-h-screen">
@@ -30,16 +44,18 @@ export default function App() {
         <Sidebar />
         <main className="space-y-6">
           <Topbar activeLabel={activeLabel} />
-          <Routes>
-            <Route path="/" element={<Dashboard />} />
-            <Route path="/students" element={<Students />} />
-            <Route path="/payments" element={<Payments />} />
-            <Route path="/attendance" element={<Attendance />} />
-            <Route path="/classes" element={<Classes />} />
-            <Route path="/techniques" element={<Techniques />} />
-            <Route path="/progress" element={<Progress />} />
-            <Route path="*" element={<Navigate to="/" replace />} />
-          </Routes>
+          <RequireAuth>
+            <Routes>
+              <Route path="/" element={<Dashboard />} />
+              <Route path="/students" element={<Students />} />
+              <Route path="/payments" element={<Payments />} />
+              <Route path="/attendance" element={<Attendance />} />
+              <Route path="/classes" element={<Classes />} />
+              <Route path="/techniques" element={<Techniques />} />
+              <Route path="/progress" element={<Progress />} />
+              <Route path="*" element={<Navigate to="/" replace />} />
+            </Routes>
+          </RequireAuth>
           <div className="flex flex-col gap-2 text-xs text-steel md:flex-row md:items-center md:justify-between">
             <span>Arista Academy CRM · Vision 2026</span>
             <span>Ultima sincronizacion: hoy 08:42 AM</span>
