@@ -2,24 +2,53 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<title>🥋 Arista Academy – Estudiantes</title>
+<title>Arista Academy</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <style>
   body {
     font-family: Arial, sans-serif;
     background: #f4f6f8;
-    padding: 40px;
+    padding: 24px;
+    color: #1f2937;
   }
 
-  h1 {
-    margin-bottom: 20px;
-    color: #e10600;
+  h1, h2 {
+    margin: 0;
+  }
+
+  .panel {
+    background: #ffffff;
+    border-radius: 10px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+    padding: 18px;
+    margin-bottom: 22px;
+  }
+
+  .header-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-bottom: 18px;
+  }
+
+  .top-actions {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+
+  .auth-layout {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 16px;
   }
 
   table {
     width: 100%;
     border-collapse: collapse;
     background: #fff;
-    margin-bottom: 20px;
   }
 
   th, td {
@@ -35,162 +64,522 @@
 
   tr:hover { background: #f1f1f1; }
 
-  .al_dia { background-color: #d4edda; }       /* verde suave */
-  .atrasado { background-color: #f8d7da; }     /* rojo suave */
-  .pendiente { background-color: #fff3cd; }    /* amarillo suave */
+  .al_dia { background-color: #d4edda; }
+  .atrasado { background-color: #f8d7da; }
+  .pendiente { background-color: #fff3cd; }
 
-  button {
+  button,
+  .link-btn {
     padding: 8px 12px;
-    margin-top: 10px;
     cursor: pointer;
     border: none;
     border-radius: 4px;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 14px;
   }
 
   .add-btn { background: #e10600; color: white; }
-  .delete-btn { background: #222; color: white; margin-left: 10px; }
+  .delete-btn { background: #222; color: white; }
+  .secondary-btn { background: #334155; color: white; }
+  .success-btn { background: #166534; color: white; }
 
   form {
-    background: #d9d9d9;
-    padding: 20px;
+    background: #e5e7eb;
+    padding: 14px;
     border-radius: 6px;
-    margin-bottom: 20px;
+    margin-bottom: 14px;
   }
 
-  input, select { margin-right: 10px; padding: 6px; }
+  input, select { margin-right: 10px; padding: 6px; margin-bottom: 8px; }
   tfoot td { font-weight: bold; }
-  select, input[type=date] { min-width: 100px; }
+  select, input[type=date], input[type=month], input[type=text], input[type=password], input[type=number] { min-width: 110px; }
+
+  .dashboard-controls {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 14px;
+    flex-wrap: wrap;
+  }
+
+  .cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 12px;
+    margin-bottom: 16px;
+  }
+
+  .card {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    padding: 14px;
+  }
+
+  .metric {
+    font-size: 24px;
+    font-weight: bold;
+    margin-top: 6px;
+  }
+
+  .positive { color: #15803d; }
+  .negative { color: #b91c1c; }
+
+  .expense-layout {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-top: 16px;
+  }
+
+  .expense-list {
+    background: #f8fafc;
+    border-radius: 8px;
+    padding: 10px;
+    border: 1px solid #e2e8f0;
+    max-height: 260px;
+    overflow: auto;
+  }
+
+  .expense-item {
+    display: flex;
+    justify-content: space-between;
+    border-bottom: 1px solid #e5e7eb;
+    padding: 8px 0;
+    font-size: 14px;
+  }
+
+  .muted {
+    color: #475569;
+    font-size: 13px;
+  }
+
+  #appShell { display: none; }
+  #authPanel { display: block; }
+
+  @media (max-width: 900px) {
+    .expense-layout {
+      grid-template-columns: 1fr;
+    }
+
+    body {
+      padding: 12px;
+    }
+  }
 </style>
 </head>
 <body>
 
-<h1>🥋 Arista Academy – Estudiantes</h1>
+<section id="authPanel" class="panel">
+  <h2>Acceso</h2>
+  <p class="muted">Inicia sesion o crea un usuario para entrar al sistema.</p>
 
-<!-- FORMULARIO -->
-<form id="studentForm">
-  <input type="text" id="name" placeholder="Nombre" required>
-  <select id="belt" required>
-    <option value="White">White</option>
-    <option value="Blue">Blue</option>
-    <option value="Purple">Purple</option>
-    <option value="Brown">Brown</option>
-    <option value="Black">Black</option>
-  </select>
-  <select id="age" required></select>
-  <input type="number" id="monthly_fee" placeholder="Mensualidad" required>
-  <input type="date" id="payment_date" required>
-  <select id="status" required>
-    <option value="al_dia">Al día</option>
-    <option value="atrasado">Atrasado</option>
-    <option value="pendiente">Pendiente</option>
-  </select>
-  <button class="add-btn" type="submit">Agregar estudiante</button>
-</form>
+  <div class="auth-layout">
+    <form id="loginForm">
+      <h3>Iniciar sesion</h3>
+      <input type="text" id="loginUsername" placeholder="Usuario" required>
+      <input type="password" id="loginPassword" placeholder="Contrasena" required>
+      <button class="secondary-btn" type="submit">Entrar</button>
+    </form>
 
-<!-- TABLA -->
-<table>
-  <thead>
-    <tr>
-      <th>Seleccionar</th>
-      <th>ID</th>
-      <th>Nombre</th>
-      <th>Cinturón</th>
-      <th>Edad</th>
-      <th>Mensualidad</th>
-      <th>Fecha de pago</th>
-      <th>Status</th>
-    </tr>
-  </thead>
-  <tbody id="studentsTable"></tbody>
-  <tfoot>
-    <tr>
-      <td colspan="5">Total Mensualidades</td>
-      <td colspan="3" id="totalFee">₡0</td>
-    </tr>
-  </tfoot>
-</table>
+    <form id="registerForm">
+      <h3>Crear usuario</h3>
+      <input type="text" id="registerUsername" placeholder="Usuario" required>
+      <input type="password" id="registerPassword" placeholder="Contrasena (min 6)" required>
+      <button class="add-btn" type="submit">Registrarse</button>
+    </form>
+  </div>
+</section>
 
-<button class="delete-btn" id="deleteBtn">Eliminar seleccionados</button>
+<div id="appShell">
+  <div class="header-row panel">
+    <div>
+      <h1>Arista Academy</h1>
+      <div class="muted">Usuario: <strong id="currentUsername">-</strong></div>
+    </div>
+    <div class="top-actions">
+      <a class="link-btn secondary-btn" href="#students-panel">Estudiantes</a>
+      <a class="link-btn secondary-btn" href="#dashboard-panel">Dashboard</a>
+      <a class="link-btn secondary-btn" href="/dashboard.html">Dashboard separado</a>
+      <button id="logoutBtn" class="delete-btn" type="button">Cerrar sesion</button>
+    </div>
+  </div>
+
+  <section id="students-panel" class="panel">
+    <h2>Gestion de estudiantes</h2>
+
+    <form id="studentForm">
+      <input type="text" id="name" placeholder="Nombre" required>
+      <select id="belt" required>
+        <option value="White">White</option>
+        <option value="Blue">Blue</option>
+        <option value="Purple">Purple</option>
+        <option value="Brown">Brown</option>
+        <option value="Black">Black</option>
+      </select>
+      <select id="age" required></select>
+      <input type="number" id="monthly_fee" placeholder="Mensualidad" required>
+      <input type="date" id="payment_date" required>
+      <select id="status" required>
+        <option value="al_dia">Al dia</option>
+        <option value="atrasado">Atrasado</option>
+        <option value="pendiente">Pendiente</option>
+      </select>
+      <button class="add-btn" type="submit">Agregar estudiante</button>
+    </form>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Seleccionar</th>
+          <th>ID</th>
+          <th>Nombre</th>
+          <th>Cinturon</th>
+          <th>Edad</th>
+          <th>Mensualidad</th>
+          <th>Fecha de pago</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody id="studentsTable"></tbody>
+      <tfoot>
+        <tr>
+          <td colspan="5">Total Mensualidades</td>
+          <td colspan="3" id="totalFee">CRC 0</td>
+        </tr>
+      </tfoot>
+    </table>
+
+    <button class="delete-btn" id="deleteBtn">Eliminar seleccionados</button>
+  </section>
+
+  <section id="dashboard-panel" class="panel">
+    <h2>Dashboard financiero</h2>
+
+    <div class="dashboard-controls">
+      <label for="monthPicker">Mes:</label>
+      <input type="month" id="monthPicker">
+      <button class="secondary-btn" id="refreshDashboardBtn" type="button">Cargar</button>
+      <button class="success-btn" id="closeMonthBtn" type="button">Cerrar mes</button>
+    </div>
+
+    <div class="cards">
+      <div class="card">
+        <div>Estudiantes Activos</div>
+        <div class="metric" id="activeStudents">0</div>
+      </div>
+      <div class="card">
+        <div>Ingresos</div>
+        <div class="metric" id="totalIncome">CRC 0</div>
+      </div>
+      <div class="card">
+        <div>Gastos</div>
+        <div class="metric" id="totalExpenses">CRC 0</div>
+      </div>
+      <div class="card">
+        <div>Ganancia Neta</div>
+        <div class="metric" id="netProfit">CRC 0</div>
+      </div>
+    </div>
+
+    <canvas id="financeChart"></canvas>
+
+    <div class="expense-layout">
+      <div>
+        <h3>Agregar gasto</h3>
+        <form id="expenseForm">
+          <input type="text" id="expenseDescription" placeholder="Descripcion" required>
+          <input type="number" id="expenseAmount" placeholder="Monto" required>
+          <input type="month" id="expenseMonth" required>
+          <button class="add-btn" type="submit">Agregar gasto</button>
+        </form>
+      </div>
+
+      <div>
+        <h3>Gastos del mes</h3>
+        <div id="expenseList" class="expense-list"></div>
+      </div>
+    </div>
+  </section>
+</div>
 
 <script>
-const API_URL = "http://192.168.64.2:3000/students";
+const API_BASE = `${window.location.protocol}//${window.location.hostname}:3000`;
+const STUDENTS_API_URL = `${API_BASE}/students`;
+const TOKEN_KEY = "arista_auth_token";
+const USERNAME_KEY = "arista_auth_username";
+
+const authPanel = document.getElementById("authPanel");
+const appShell = document.getElementById("appShell");
+const currentUsernameEl = document.getElementById("currentUsername");
 const tableBody = document.getElementById("studentsTable");
 const totalFeeEl = document.getElementById("totalFee");
+const monthPicker = document.getElementById("monthPicker");
+const expenseMonth = document.getElementById("expenseMonth");
+const expenseList = document.getElementById("expenseList");
 
-// ===================== GENERAR EDADES FORM
+let financeChart;
+
+function getToken() {
+  return localStorage.getItem(TOKEN_KEY);
+}
+
+function setSession(token, username) {
+  localStorage.setItem(TOKEN_KEY, token);
+  localStorage.setItem(USERNAME_KEY, username);
+}
+
+function clearSession() {
+  localStorage.removeItem(TOKEN_KEY);
+  localStorage.removeItem(USERNAME_KEY);
+}
+
+function showAuth() {
+  authPanel.style.display = "block";
+  appShell.style.display = "none";
+}
+
+function showApp(username) {
+  authPanel.style.display = "none";
+  appShell.style.display = "block";
+  currentUsernameEl.textContent = username || "-";
+}
+
+async function apiFetch(path, options = {}) {
+  const token = getToken();
+  const headers = {
+    ...(options.headers || {}),
+  };
+
+  if (token) {
+    headers.Authorization = `Bearer ${token}`;
+  }
+
+  const response = await fetch(`${API_BASE}${path}`, {
+    ...options,
+    headers,
+  });
+
+  if (response.status === 401) {
+    clearSession();
+    showAuth();
+    throw new Error("Sesion expirada. Inicia sesion nuevamente.");
+  }
+
+  return response;
+}
+
+function currentMonthValue() {
+  return new Date().toISOString().slice(0, 7);
+}
+
+function formatDate(dateValue) {
+  return dateValue ? String(dateValue).slice(0, 10) : "";
+}
+
+function formatCRC(value) {
+  return `CRC ${Number(value || 0)}`;
+}
+
 const ageSelectForm = document.getElementById("age");
-for(let i = 4; i <= 80; i++) {
+for (let i = 4; i <= 80; i++) {
   const option = document.createElement("option");
   option.value = i;
   option.textContent = i;
   ageSelectForm.appendChild(option);
 }
 
-// ===================== CARGAR ESTUDIANTES
 async function loadStudents() {
   tableBody.innerHTML = "";
   let total = 0;
 
-  try {
-    const res = await fetch(API_URL);
-    const students = await res.json();
+  const res = await apiFetch("/students");
+  if (!res.ok) throw new Error("Error cargando estudiantes");
+  const students = await res.json();
 
-    students.forEach((s, index) => {
-      total += Number(s.monthly_fee || 0);
-      const displayId = index + 1;
+  students.forEach((s, index) => {
+    total += Number(s.monthly_fee || 0);
+    const displayId = index + 1;
 
-      // Opciones de edad
-      let ageOptions = '';
-      for(let i=4;i<=80;i++){
-        ageOptions += `<option value="${i}" ${i==s.age?'selected':''}>${i}</option>`;
-      }
+    let ageOptions = "";
+    for (let i = 4; i <= 80; i++) {
+      ageOptions += `<option value="${i}" ${i === Number(s.age) ? "selected" : ""}>${i}</option>`;
+    }
 
-      // Clase de fila según status
-      let rowClass = s.status || 'pendiente'; // fallback
-      const row = document.createElement("tr");
-      row.className = rowClass;
+    const rowClass = s.status || "pendiente";
+    const row = document.createElement("tr");
+    row.className = rowClass;
 
-      row.innerHTML = `
-        <td><input type="checkbox" data-id="${s.id}"></td>
-        <td>${displayId}</td>
-        <td>${s.name}</td>
-        <td>
-          <select class="belt-select" data-id="${s.id}">
-            <option value="White" ${s.belt==='White'?'selected':''}>White</option>
-            <option value="Blue" ${s.belt==='Blue'?'selected':''}>Blue</option>
-            <option value="Purple" ${s.belt==='Purple'?'selected':''}>Purple</option>
-            <option value="Brown" ${s.belt==='Brown'?'selected':''}>Brown</option>
-            <option value="Black" ${s.belt==='Black'?'selected':''}>Black</option>
-          </select>
-        </td>
-        <td>
-          <select class="age-select" data-id="${s.id}">
-            ${ageOptions}
-          </select>
-        </td>
-        <td>₡${s.monthly_fee ?? ''}</td>
-        <td><input type="date" class="payment-date" data-id="${s.id}" value="${s.payment_date ?? ''}"></td>
-        <td>
-          <select class="status-select" data-id="${s.id}">
-            <option value="al_dia" ${s.status==='al_dia'?'selected':''}>Al día</option>
-            <option value="atrasado" ${s.status==='atrasado'?'selected':''}>Atrasado</option>
-            <option value="pendiente" ${s.status==='pendiente'?'selected':''}>Pendiente</option>
-          </select>
-        </td>
-      `;
-      tableBody.appendChild(row);
-    });
+    row.innerHTML = `
+      <td><input type="checkbox" data-id="${s.id}"></td>
+      <td>${displayId}</td>
+      <td>${s.name}</td>
+      <td>
+        <select class="belt-select" data-id="${s.id}">
+          <option value="White" ${s.belt === "White" ? "selected" : ""}>White</option>
+          <option value="Blue" ${s.belt === "Blue" ? "selected" : ""}>Blue</option>
+          <option value="Purple" ${s.belt === "Purple" ? "selected" : ""}>Purple</option>
+          <option value="Brown" ${s.belt === "Brown" ? "selected" : ""}>Brown</option>
+          <option value="Black" ${s.belt === "Black" ? "selected" : ""}>Black</option>
+        </select>
+      </td>
+      <td>
+        <select class="age-select" data-id="${s.id}">
+          ${ageOptions}
+        </select>
+      </td>
+      <td>CRC ${s.monthly_fee ?? ""}</td>
+      <td><input type="date" class="payment-date" data-id="${s.id}" value="${formatDate(s.payment_date)}"></td>
+      <td>
+        <select class="status-select" data-id="${s.id}">
+          <option value="al_dia" ${s.status === "al_dia" ? "selected" : ""}>Al dia</option>
+          <option value="atrasado" ${s.status === "atrasado" ? "selected" : ""}>Atrasado</option>
+          <option value="pendiente" ${s.status === "pendiente" ? "selected" : ""}>Pendiente</option>
+        </select>
+      </td>
+    `;
+    tableBody.appendChild(row);
+  });
 
-    totalFeeEl.textContent = `₡${total}`;
-  } catch(err) {
-    console.error(err);
-    alert("Error cargando estudiantes");
-  }
+  totalFeeEl.textContent = formatCRC(total);
 }
 
-// ===================== AGREGAR ESTUDIANTE
-document.getElementById("studentForm").addEventListener("submit", async e => {
+async function loadExpenses(month) {
+  expenseList.innerHTML = "Cargando gastos...";
+
+  const res = await apiFetch(`/expenses/${month}`);
+  if (!res.ok) {
+    expenseList.innerHTML = "Error cargando gastos";
+    return;
+  }
+
+  const expenses = await res.json();
+
+  if (!expenses.length) {
+    expenseList.innerHTML = "No hay gastos para este mes.";
+    return;
+  }
+
+  expenseList.innerHTML = expenses.map((item) => (
+    `<div class="expense-item"><span>${item.description}</span><strong>${formatCRC(item.amount)}</strong></div>`
+  )).join("");
+}
+
+function renderChart(data) {
+  const ctx = document.getElementById("financeChart");
+
+  if (financeChart) {
+    financeChart.destroy();
+  }
+
+  financeChart = new Chart(ctx, {
+    type: "bar",
+    data: {
+      labels: ["Ingresos", "Gastos", "Ganancia"],
+      datasets: [{
+        label: "Resumen Financiero",
+        data: [data.total_income, data.total_expenses, data.net_profit],
+        backgroundColor: ["#16a34a", "#dc2626", "#1d4ed8"]
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: {
+        legend: { display: false }
+      }
+    }
+  });
+}
+
+async function loadDashboard() {
+  const month = monthPicker.value;
+  if (!month) return;
+
+  const res = await apiFetch(`/dashboard/${month}`);
+  if (!res.ok) throw new Error("No se pudo cargar dashboard");
+  const data = await res.json();
+
+  document.getElementById("activeStudents").textContent = data.active_students;
+  document.getElementById("totalIncome").textContent = formatCRC(data.total_income);
+  document.getElementById("totalExpenses").textContent = formatCRC(data.total_expenses);
+
+  const profitEl = document.getElementById("netProfit");
+  profitEl.textContent = formatCRC(data.net_profit);
+  profitEl.className = `metric ${data.net_profit >= 0 ? "positive" : "negative"}`;
+
+  renderChart(data);
+  loadExpenses(month);
+}
+
+async function closeMonth() {
+  const month = monthPicker.value;
+  if (!month) return alert("Selecciona un mes");
+
+  const res = await apiFetch(`/close-month/${month}`, { method: "POST" });
+  const data = await res.json();
+  alert(data.message || "Mes cerrado");
+}
+
+async function refreshAll() {
+  await loadStudents();
+  await loadDashboard();
+}
+
+document.getElementById("loginForm").addEventListener("submit", async (e) => {
   e.preventDefault();
+  const username = document.getElementById("loginUsername").value.trim();
+  const password = document.getElementById("loginPassword").value;
+
+  try {
+    const res = await fetch(`${API_BASE}/auth/login`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ username, password })
+    });
+
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || "No se pudo iniciar sesion");
+
+    setSession(data.token, data.user.username);
+    showApp(data.user.username);
+    await refreshAll();
+  } catch (error) {
+    alert(error.message);
+  }
+});
+
+document.getElementById("registerForm").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const username = document.getElementById("registerUsername").value.trim();
+  const password = document.getElementById("registerPassword").value;
+
+  try {
+    const res = await fetch(`${API_BASE}/auth/register`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ username, password })
+    });
+
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || "No se pudo registrar");
+
+    setSession(data.token, data.user.username);
+    showApp(data.user.username);
+    await refreshAll();
+  } catch (error) {
+    alert(error.message);
+  }
+});
+
+document.getElementById("logoutBtn").addEventListener("click", () => {
+  clearSession();
+  showAuth();
+});
+
+document.getElementById("studentForm").addEventListener("submit", async (e) => {
+  e.preventDefault();
+
   const student = {
     name: document.getElementById("name").value,
     belt: document.getElementById("belt").value,
@@ -201,73 +590,121 @@ document.getElementById("studentForm").addEventListener("submit", async e => {
   };
 
   try {
-    const res = await fetch(API_URL, {
-      method: "PUT",
+    const res = await apiFetch("/students", {
+      method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(student)
     });
-    if(!res.ok) throw new Error("Error creando estudiante");
+
+    if (!res.ok) throw new Error("Error creando estudiante");
+
     e.target.reset();
-    loadStudents();
-  } catch(err) {
-    console.error(err);
+    await refreshAll();
+  } catch (err) {
     alert(err.message);
   }
 });
 
-// ===================== ELIMINAR SELECCIONADOS
 document.getElementById("deleteBtn").addEventListener("click", async () => {
-  const selected = [...document.querySelectorAll('input[type=checkbox]:checked')].map(cb => cb.dataset.id);
-  for(const id of selected){
-    await fetch(`${API_URL}/${id}`, { method: "DELETE" });
+  const selected = [...document.querySelectorAll("input[type=checkbox]:checked")]
+    .map((cb) => cb.dataset.id);
+
+  for (const id of selected) {
+    await apiFetch(`/students/${id}`, { method: "DELETE" });
   }
-  loadStudents();
+
+  await refreshAll();
 });
 
-tableBody.addEventListener("change", async e => {
+tableBody.addEventListener("change", async (e) => {
   const target = e.target;
   const id = target.dataset.id;
   if (!id) return;
 
   const row = target.closest("tr");
-
   const payload = {
     name: row.querySelector("td:nth-child(3)").textContent,
     belt: row.querySelector(".belt-select").value,
     age: Number(row.querySelector(".age-select").value),
-    monthly_fee: Number(
-      row.querySelector("td:nth-child(6)").textContent.replace("₡","")
-    ) || 0,
+    monthly_fee: Number(row.querySelector("td:nth-child(6)").textContent.replace("CRC", "")) || 0,
     payment_date: row.querySelector(".payment-date").value,
     status: row.querySelector(".status-select").value
   };
 
+  const res = await apiFetch(`/students/${id}`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload)
+  });
+
+  if (!res.ok) {
+    alert(`Error backend: ${res.status}`);
+    return;
+  }
+
+  row.className = payload.status;
+  await loadDashboard();
+});
+
+document.getElementById("refreshDashboardBtn").addEventListener("click", loadDashboard);
+document.getElementById("closeMonthBtn").addEventListener("click", closeMonth);
+
+monthPicker.addEventListener("change", () => {
+  expenseMonth.value = monthPicker.value;
+  loadDashboard();
+});
+
+document.getElementById("expenseForm").addEventListener("submit", async (e) => {
+  e.preventDefault();
+
+  const payload = {
+    description: document.getElementById("expenseDescription").value,
+    amount: Number(document.getElementById("expenseAmount").value),
+    month: expenseMonth.value
+  };
+
   try {
-    const res = await fetch(`${API_URL}/${id}`, {
-      method: "PATCH", // luego probamos PUT si hace falta
+    const res = await apiFetch("/expenses", {
+      method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload)
     });
 
-    console.log("STATUS:", res.status);
+    if (!res.ok) throw new Error("No se pudo crear el gasto");
 
-    const text = await res.text();
-    console.log("RESPUESTA BACKEND:", text);
-
-    if (!res.ok) {
-      alert("Error backend: " + res.status);
-      return;
-    }
-
-    row.className = payload.status;
-
-  } catch (err) {
-    console.error("ERROR FETCH:", err);
+    e.target.reset();
+    expenseMonth.value = monthPicker.value;
+    await loadDashboard();
+  } catch (error) {
+    alert(error.message || "Error guardando gasto");
   }
 });
 
-// ===================== CARGAR AL INICIO
-loadStudents();
+async function bootstrap() {
+  monthPicker.value = currentMonthValue();
+  expenseMonth.value = monthPicker.value;
+
+  const token = getToken();
+  const storedUsername = localStorage.getItem(USERNAME_KEY);
+
+  if (!token) {
+    showAuth();
+    return;
+  }
+
+  try {
+    const res = await apiFetch("/auth/me");
+    if (!res.ok) throw new Error("No autorizado");
+    const data = await res.json();
+    showApp(data.user.username || storedUsername);
+    await refreshAll();
+  } catch (error) {
+    clearSession();
+    showAuth();
+  }
+}
+
+bootstrap();
 </script>
 </body>
 </html>
