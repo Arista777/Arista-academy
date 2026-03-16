@@ -1,26 +1,20 @@
 import React from "react";
-
-const belts = [
-  { belt: "White", count: 48 },
-  { belt: "Blue", count: 36 },
-  { belt: "Purple", count: 22 },
-  { belt: "Brown", count: 12 },
-  { belt: "Black", count: 6 },
-];
-
-const promotions = [
-  { name: "Ana Perez", belt: "Blue", date: "Mar 10" },
-  { name: "Mario Diaz", belt: "Brown", date: "Mar 08" },
-  { name: "Carla Soto", belt: "Purple", date: "Mar 01" },
-];
+import SectionHeader from "../components/SectionHeader.jsx";
+import useApi from "../hooks/useApi.js";
+import { fetchProgress } from "../utils/api.js";
+import { demoBelts, demoPromotions, demoProgress } from "../utils/demoData.js";
 
 export default function Progress() {
+  const { data, error } = useApi(fetchProgress, []);
+  const belts = (data && data.belts) || demoBelts;
+  const promotions = (data && data.promotions) || demoPromotions;
+  const students = (data && data.students) || demoProgress;
+
   return (
     <section className="space-y-6">
       <div className="grid gap-4 lg:grid-cols-[1.2fr_1fr]">
         <div className="card">
-          <h2 className="font-display text-xl font-semibold">Distribucion de cinturones</h2>
-          <p className="text-sm text-steel">Estado actual del programa de BJJ.</p>
+          <SectionHeader title="Distribucion de cinturones" subtitle="Estado actual del programa de BJJ." />
           <div className="mt-6 space-y-4">
             {belts.map((item) => (
               <div key={item.belt}>
@@ -36,11 +30,10 @@ export default function Progress() {
           </div>
         </div>
         <div className="card">
-          <h2 className="font-display text-xl font-semibold">Promociones recientes</h2>
-          <p className="text-sm text-steel">Ultimos ascensos registrados.</p>
+          <SectionHeader title="Promociones recientes" subtitle="Ultimos ascensos registrados." />
           <div className="mt-6 space-y-3">
             {promotions.map((item) => (
-              <div key={item.name} className="flex items-center justify-between rounded-xl border border-mist px-4 py-3">
+              <div key={item.id || item.name} className="flex items-center justify-between rounded-xl border border-mist px-4 py-3">
                 <div>
                   <p className="font-display text-base text-ink">{item.name}</p>
                   <p className="text-xs text-steel">{item.date}</p>
@@ -54,30 +47,10 @@ export default function Progress() {
         </div>
       </div>
       <div className="card">
-        <h2 className="font-display text-xl font-semibold">Progreso individual</h2>
-        <p className="text-sm text-steel">Notas de coaches, objetivos y tecnicas dominadas.</p>
+        <SectionHeader title="Progreso individual" subtitle="Notas de coaches, objetivos y tecnicas dominadas." />
         <div className="mt-6 grid gap-4 lg:grid-cols-3">
-          {[
-            {
-              name: "Ana Perez",
-              focus: "Guard attacks",
-              goals: "Triangle + Armbar",
-              checkins: "8 sesiones"
-            },
-            {
-              name: "Luis Mora",
-              focus: "Fundamentals",
-              goals: "Shrimp + Frames",
-              checkins: "5 sesiones"
-            },
-            {
-              name: "Carla Soto",
-              focus: "Passing",
-              goals: "Knee slice",
-              checkins: "10 sesiones"
-            }
-          ].map((item) => (
-            <div key={item.name} className="rounded-2xl border border-mist bg-white/70 p-5">
+          {students.map((item) => (
+            <div key={item.id || item.name} className="rounded-2xl border border-mist bg-white/70 p-5">
               <p className="font-display text-lg text-ink">{item.name}</p>
               <p className="text-xs text-steel">Focus: {item.focus}</p>
               <div className="mt-3 space-y-2 text-xs text-steel">
@@ -88,6 +61,9 @@ export default function Progress() {
             </div>
           ))}
         </div>
+        {error ? (
+          <p className="mt-4 text-xs text-ember">No se pudo conectar a la API. Mostrando demo.</p>
+        ) : null}
       </div>
     </section>
   );

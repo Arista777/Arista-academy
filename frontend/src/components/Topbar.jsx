@@ -2,7 +2,7 @@ import React, { useState } from "react";
 
 const defaultApi = "http://localhost:3000";
 
-export default function Topbar() {
+export default function Topbar({ activeLabel = "Panel general" }) {
   const saved = localStorage.getItem("arista_api_base") || "";
   const [value, setValue] = useState(saved);
 
@@ -20,7 +20,7 @@ export default function Topbar() {
     <div className="card flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
       <div>
         <p className="text-xs uppercase tracking-[0.28em] text-ember">Control Center</p>
-        <h1 className="mt-2 font-display text-3xl font-semibold text-ink">Panel general</h1>
+        <h1 className="mt-2 font-display text-3xl font-semibold text-ink">{activeLabel}</h1>
         <p className="mt-2 text-sm text-steel">Todo tu dojo conectado: alumnos, clases y pagos en un solo lugar.</p>
       </div>
       <div className="flex flex-col gap-3 lg:items-end">

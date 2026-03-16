@@ -19,6 +19,16 @@ const pages = {
   progress: Progress,
 };
 
+const pageLabels = {
+  dashboard: "Panel general",
+  students: "Estudiantes",
+  classes: "Clases",
+  attendance: "Asistencias",
+  payments: "Pagos",
+  techniques: "Tecnicas",
+  progress: "Progreso",
+};
+
 export default function App() {
   const [active, setActive] = useState("dashboard");
   const ActivePage = useMemo(() => pages[active], [active]);
@@ -28,7 +38,7 @@ export default function App() {
       <div className="mx-auto grid max-w-7xl grid-cols-1 gap-6 px-4 py-8 lg:grid-cols-[280px_1fr]">
         <Sidebar active={active} onChange={setActive} />
         <main className="space-y-6">
-          <Topbar />
+          <Topbar activeLabel={pageLabels[active]} />
           <ActivePage />
           <div className="flex flex-col gap-2 text-xs text-steel md:flex-row md:items-center md:justify-between">
             <span>Arista Academy CRM · Vision 2026</span>

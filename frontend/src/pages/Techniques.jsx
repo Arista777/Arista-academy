@@ -1,47 +1,32 @@
 import React from "react";
-
-const techniques = [
-  {
-    name: "Triangle choke",
-    category: "Guard attacks",
-    related: ["Armbar", "Omoplata"],
-    resources: "Video + Drills"
-  },
-  {
-    name: "Knee slice pass",
-    category: "Passing",
-    related: ["Underhook", "Crossface"],
-    resources: "Notes + Sparring cues"
-  },
-  {
-    name: "Teep",
-    category: "Muay Thai basics",
-    related: ["Jab", "Rear kick"],
-    resources: "Video + Pad combos"
-  }
-];
+import SectionHeader from "../components/SectionHeader.jsx";
+import useApi from "../hooks/useApi.js";
+import { fetchTechniques } from "../utils/api.js";
+import { demoTechniques } from "../utils/demoData.js";
 
 export default function Techniques() {
+  const { data, error } = useApi(fetchTechniques, []);
+  const techniques = (data && data.techniques) || data || demoTechniques;
+
   return (
     <section className="space-y-6">
       <div className="card">
-        <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-          <div>
-            <h2 className="font-display text-xl font-semibold">Base de conocimiento</h2>
-            <p className="text-sm text-steel">Crea relaciones entre tecnicas y recursos.</p>
-          </div>
-          <div className="flex flex-wrap gap-2">
-            <button className="rounded-full border border-mist px-4 py-2 text-xs font-semibold">Agregar recurso</button>
-            <button className="rounded-full bg-ember px-4 py-2 text-xs font-semibold text-white">Nueva tecnica</button>
-          </div>
-        </div>
+        <SectionHeader
+          kicker="Knowledge"
+          title="Base de conocimiento"
+          subtitle="Crea relaciones entre tecnicas y recursos."
+          actions={[
+            <button key="resource" className="rounded-full border border-mist px-4 py-2 text-xs font-semibold">Agregar recurso</button>,
+            <button key="new" className="rounded-full bg-ember px-4 py-2 text-xs font-semibold text-white">Nueva tecnica</button>,
+          ]}
+        />
         <div className="mt-6 grid gap-4 lg:grid-cols-3">
           {techniques.map((item) => (
-            <div key={item.name} className="rounded-2xl border border-mist bg-white/70 p-5">
+            <div key={item.id || item.name} className="rounded-2xl border border-mist bg-white/70 p-5">
               <p className="text-xs uppercase tracking-[0.2em] text-steel">{item.category}</p>
               <p className="mt-2 font-display text-lg text-ink">{item.name}</p>
               <div className="mt-4 flex flex-wrap gap-2">
-                {item.related.map((rel) => (
+                {(item.related || []).map((rel) => (
                   <span key={rel} className="rounded-full bg-haze px-3 py-1 text-xs font-semibold text-ink">
                     {rel}
                   </span>
@@ -52,6 +37,9 @@ export default function Techniques() {
             </div>
           ))}
         </div>
+        {error ? (
+          <p className="mt-4 text-xs text-ember">No se pudo conectar a la API. Mostrando demo.</p>
+        ) : null}
       </div>
     </section>
   );
