@@ -1,4 +1,3 @@
-version: '3.9'
 services:
   db:
     image: postgres:15
@@ -15,6 +14,15 @@ services:
     build: ./backend
     depends_on:
       - db
+    environment:
+      PORT: 3000
+      JWT_SECRET: arista-local-dev-secret
+      JWT_EXPIRES_IN: 12h
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_USER: postgres
+      DB_PASSWORD: postgres
+      DB_NAME: postgres
     ports:
       - "3000:3000"
 
