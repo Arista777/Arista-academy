@@ -1,0 +1,45 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: light;
+}
+
+body {
+  font-family: "Manrope", ui-sans-serif, system-ui;
+  background: #f5f1ec;
+  color: #111118;
+  min-height: 100%;
+}
+
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  background:
+    radial-gradient(circle at 15% 20%, rgba(240, 77, 50, 0.2), transparent 45%),
+    radial-gradient(circle at 85% 0%, rgba(24, 167, 124, 0.18), transparent 45%),
+    radial-gradient(circle at 85% 90%, rgba(28, 60, 247, 0.12), transparent 55%);
+  pointer-events: none;
+  z-index: -2;
+}
+
+body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  background-image: radial-gradient(rgba(17, 17, 24, 0.06) 1px, transparent 1px);
+  background-size: 18px 18px;
+  opacity: 0.4;
+  pointer-events: none;
+  z-index: -1;
+}
+
+.card {
+  @apply rounded-2xl bg-white/80 p-6 shadow-soft backdrop-blur;
+}
+
+.card-strong {
+  @apply rounded-2xl bg-ink p-6 text-white shadow-soft;
+}
