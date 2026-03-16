@@ -4,6 +4,7 @@ import {
   checkInController,
   classAttendanceHistory,
   myAttendanceHistory,
+  recentAttendance,
   studentAttendanceHistory,
 } from "../controllers/attendanceController.js";
 import { authRequired } from "../middleware/auth.js";
@@ -16,5 +17,6 @@ router.get("/classes/:classId", authRequired, requireRole([ROLE_ADMIN, ROLE_COAC
 router.get("/students/:studentId", authRequired, requireRole([ROLE_ADMIN]), studentAttendanceHistory);
 router.get("/me", authRequired, requireRole([ROLE_ADMIN, ROLE_STUDENT]), myAttendanceHistory);
 router.get("/stats", authRequired, requireRole([ROLE_ADMIN, ROLE_COACH]), attendanceStats);
+router.get("/recent", authRequired, requireRole([ROLE_ADMIN, ROLE_COACH]), recentAttendance);
 
 export default router;

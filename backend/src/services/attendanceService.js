@@ -3,6 +3,7 @@ import {
   getAttendanceStats,
   listAttendanceByClass,
   listAttendanceByStudent,
+  listRecentAttendanceSessions,
 } from "../models/attendanceModel.js";
 import { getStudentByUserId } from "../models/studentModel.js";
 
@@ -33,10 +34,15 @@ async function getAttendanceSummary({ classId, studentId }) {
   return getAttendanceStats({ classId, studentId });
 }
 
+async function getRecentAttendance(limit) {
+  return listRecentAttendanceSessions(limit);
+}
+
 export {
   checkIn,
   getClassAttendanceHistory,
   getStudentAttendanceHistory,
   getMyAttendanceHistory,
   getAttendanceSummary,
+  getRecentAttendance,
 };

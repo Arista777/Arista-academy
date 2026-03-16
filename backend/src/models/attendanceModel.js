@@ -34,6 +34,19 @@ async function listAttendanceByStudent(studentId) {
   return result.rows;
 }
 
+async function listRecentAttendanceSessions(limit = 6) {
+  const result = await pool.query(
+    `SELECT c.name AS class_name, DATE(a.attended_at) AS session_date, COUNT(*) AS attendees
+     FROM attendance a
+     JOIN classes c ON a.class_id = c.id
+     GROUP BY c.name, DATE(a.attended_at)
+     ORDER BY session_date DESC
+     LIMIT $1`,
+    [limit]
+  );
+  return result.rows;
+}
+
 async function getAttendanceStats({ classId, studentId }) {
   if (classId) {
     const result = await pool.query(
@@ -59,4 +72,4 @@ async function getAttendanceStats({ classId, studentId }) {
   return { total: result.rows[0].total };
 }
 
-export { createAttendance, listAttendanceByClass, listAttendanceByStudent, getAttendanceStats };
+export { createAttendance, listAttendanceByClass, listAttendanceByStudent, listRecentAttendanceSessions, getAttendanceStats };
