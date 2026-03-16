@@ -5,11 +5,13 @@
   <title>Dashboard Academia</title>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
-    body { font-family: Arial; padding: 20px; background: #f4f6f9; }
+    body { font-family: Arial; padding: 20px; background: #f4f6f9; color: #111827; }
     h1 { margin-bottom: 20px; }
-    .cards { display: flex; gap: 20px; margin-bottom: 30px; }
+    .top-row { display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; }
+    .cards { display: flex; gap: 20px; margin-bottom: 30px; flex-wrap: wrap; }
     .card {
       flex: 1;
+      min-width: 220px;
       padding: 20px;
       border-radius: 10px;
       background: white;
@@ -20,17 +22,24 @@
     .negative { color: red; }
     .controls { margin-bottom: 20px; }
     canvas { background: white; padding: 20px; border-radius: 10px; }
+    .btn { padding: 8px 12px; border: none; border-radius: 6px; cursor: pointer; }
+    .btn-link { text-decoration: none; background: #334155; color: #fff; display: inline-block; }
+    .btn-main { background: #334155; color: #fff; }
+    .btn-success { background: #166534; color: #fff; }
   </style>
 </head>
 <body>
 
-<h1>📊 Dashboard Academia</h1>
+<div class="top-row">
+  <h1>Dashboard Academia</h1>
+  <a class="btn btn-link" href="/index.html">Volver al inicio</a>
+</div>
 
 <div class="controls">
   <label>Mes: </label>
   <input type="month" id="monthPicker">
-  <button onclick="loadDashboard()">Cargar</button>
-  <button onclick="closeMonth()">Cerrar Mes</button>
+  <button class="btn btn-main" onclick="loadDashboard()">Cargar</button>
+  <button class="btn btn-success" onclick="closeMonth()">Cerrar Mes</button>
 </div>
 
 <div class="cards">
@@ -39,76 +48,169 @@
     <h2 id="activeStudents">0</h2>
   </div>
   <div class="card">
+    <p>Total Estudiantes</p>
+    <h2 id="totalStudents">0</h2>
+  </div>
+  <div class="card">
+    <p>Membresias Activas</p>
+    <h2 id="activeMemberships">0</h2>
+  </div>
+  <div class="card">
+    <p>Pagos Pendientes</p>
+    <h2 id="pendingPayments">0</h2>
+  </div>
+  <div class="card">
     <p>Ingresos</p>
-    <h2 id="totalIncome">₡0</h2>
+    <h2 id="totalIncome">CRC 0</h2>
   </div>
   <div class="card">
     <p>Gastos</p>
-    <h2 id="totalExpenses">₡0</h2>
+    <h2 id="totalExpenses">CRC 0</h2>
   </div>
   <div class="card">
     <p>Ganancia Neta</p>
-    <h2 id="netProfit">₡0</h2>
+    <h2 id="netProfit">CRC 0</h2>
+  </div>
+  <div class="card">
+    <p>Asistencias Totales</p>
+    <h2 id="attendanceTotal">0</h2>
   </div>
 </div>
 
 <canvas id="financeChart"></canvas>
+<div class="controls">
+  <h3>Pagos pendientes del mes</h3>
+  <div id="pendingList">Cargando...</div>
+</div>
 
 <script>
-const API_URL = "http://192.168.64.2:3000";
-
+const API_URL = `${window.location.protocol}//${window.location.hostname}:3000`;
+const TOKEN_KEY = "arista_auth_token";
 let chart;
+
+function currentMonthValue() {
+  return new Date().toISOString().slice(0, 7);
+}
+
+function formatCRC(value) {
+  return `CRC ${Number(value || 0)}`;
+}
+
+function getToken() {
+  return localStorage.getItem(TOKEN_KEY);
+}
+
+async function apiFetch(path, options = {}) {
+  const token = getToken();
+
+  if (!token) {
+    window.location.href = "/index.html";
+    throw new Error("No auth token");
+  }
+
+  const response = await fetch(`${API_URL}${path}`, {
+    ...options,
+    headers: {
+      ...(options.headers || {}),
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
+  if (response.status === 401) {
+    localStorage.removeItem(TOKEN_KEY);
+    localStorage.removeItem("arista_auth_username");
+    window.location.href = "/index.html";
+    throw new Error("Unauthorized");
+  }
+
+  return response;
+}
 
 async function loadDashboard() {
   const month = document.getElementById("monthPicker").value;
-  if(!month) return alert("Selecciona un mes");
+  if (!month) return alert("Selecciona un mes");
 
-  const res = await fetch(`${API_URL}/dashboard/${month}`);
+  const res = await apiFetch(`/dashboard/${month}`);
+  if (!res.ok) return alert("No se pudo cargar el dashboard");
   const data = await res.json();
 
   document.getElementById("activeStudents").textContent = data.active_students;
-  document.getElementById("totalIncome").textContent = `₡${data.total_income}`;
-  document.getElementById("totalExpenses").textContent = `₡${data.total_expenses}`;
+  document.getElementById("totalIncome").textContent = formatCRC(data.total_income);
+  document.getElementById("totalExpenses").textContent = formatCRC(data.total_expenses);
 
   const profitEl = document.getElementById("netProfit");
-  profitEl.textContent = `₡${data.net_profit}`;
+  profitEl.textContent = formatCRC(data.net_profit);
   profitEl.className = data.net_profit >= 0 ? "positive" : "negative";
 
   renderChart(data);
+  await loadKpis(month);
 }
 
 function renderChart(data) {
-  const ctx = document.getElementById('financeChart');
+  const ctx = document.getElementById("financeChart");
 
-  if(chart) chart.destroy();
+  if (chart) chart.destroy();
 
   chart = new Chart(ctx, {
-    type: 'bar',
+    type: "bar",
     data: {
-      labels: ['Ingresos', 'Gastos', 'Ganancia'],
+      labels: ["Ingresos", "Gastos", "Ganancia"],
       datasets: [{
-        label: 'Resumen Financiero',
+        label: "Resumen Financiero",
         data: [
           data.total_income,
           data.total_expenses,
           data.net_profit
-        ]
+        ],
+        backgroundColor: ["#16a34a", "#dc2626", "#1d4ed8"]
       }]
+    },
+    options: {
+      responsive: true,
+      plugins: {
+        legend: { display: false }
+      }
     }
   });
 }
 
+async function loadKpis(month) {
+  const studentsRes = await apiFetch(`/api/v1/students`);
+  const students = studentsRes.ok ? await studentsRes.json() : [];
+
+  const totalStudents = students.length;
+  const activeMemberships = students.filter((s) => s.status !== "inactive" && s.membership_plan_id).length;
+
+  document.getElementById("totalStudents").textContent = totalStudents;
+  document.getElementById("activeMemberships").textContent = activeMemberships;
+
+  const pendingRes = await apiFetch(`/api/v1/payments/pending?month=${month}`);
+  const pendingData = pendingRes.ok ? await pendingRes.json() : { pending: [] };
+  const pendingList = pendingData.pending || [];
+  document.getElementById("pendingPayments").textContent = pendingList.length;
+  document.getElementById("pendingList").innerHTML = pendingList.length
+    ? pendingList.map((p) => `<div>${p.name} - CRC ${Number(p.monthly_fee || 0)}</div>`).join("")
+    : "Sin pagos pendientes.";
+
+  const attendanceRes = await apiFetch(`/api/v1/attendance/stats`);
+  const attendanceData = attendanceRes.ok ? await attendanceRes.json() : { total: 0 };
+  document.getElementById("attendanceTotal").textContent = attendanceData.total || 0;
+}
+
 async function closeMonth() {
   const month = document.getElementById("monthPicker").value;
-  if(!month) return alert("Selecciona un mes");
+  if (!month) return alert("Selecciona un mes");
 
-  const res = await fetch(`${API_URL}/close-month/${month}`, {
+  const res = await apiFetch(`/close-month/${month}`, {
     method: "POST"
   });
 
   const data = await res.json();
-  alert(data.message);
+  alert(data.message || "Mes cerrado");
 }
+
+document.getElementById("monthPicker").value = currentMonthValue();
+loadDashboard();
 </script>
 
 </body>
