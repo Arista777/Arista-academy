@@ -27,6 +27,9 @@ npm run migrate
 npm run start
 ```
 
+### Environment
+Copy `.env.example` to `.env` and adjust secrets before running Docker.
+
 ### Background Jobs
 ```bash
 cd backend
