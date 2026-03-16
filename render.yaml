@@ -37,7 +37,8 @@ services:
           property: connectionString
 
   - name: arista-frontend
-    type: static
+    type: web
+    runtime: static
     buildCommand: "echo 'static'"
     staticPublishPath: frontend
 
